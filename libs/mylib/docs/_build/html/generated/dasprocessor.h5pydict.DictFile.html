@@ -1,0 +1,1133 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" />
+
+    <!-- Generated with Sphinx 8.1.3 and Furo 2024.08.06 -->
+        <title>dasprocessor.h5pydict.DictFile - DAS communications toolbox documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=354aac6f" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=302659d7" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">DAS communications toolbox  documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+  
+  
+  <span class="sidebar-brand-text">DAS communications toolbox  documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../api.html">API</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of API</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="dasprocessor.html">dasprocessor</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of dasprocessor</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="dasprocessor.cable.html">dasprocessor.cable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dasprocessor.coherentprocessing.html">dasprocessor.coherentprocessing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dasprocessor.constants.html">dasprocessor.constants</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dasprocessor.detection.html">dasprocessor.detection</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dasprocessor.exceptions.html">dasprocessor.exceptions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dasprocessor.gnss.html">dasprocessor.gnss</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dasprocessor.h5pydict.html">dasprocessor.h5pydict</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dasprocessor.janusprocessing.html">dasprocessor.janusprocessing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dasprocessor.saveandload.html">dasprocessor.saveandload</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dasprocessor.sensitivity.html">dasprocessor.sensitivity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dasprocessor.simpleDASreader8.html">dasprocessor.simpleDASreader8</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dasprocessor.spatial_sampling_response.html">dasprocessor.spatial_sampling_response</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dasprocessor.utils.html">dasprocessor.utils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dasprocessor.visualisation.html">dasprocessor.visualisation</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="../_sources/generated/dasprocessor.h5pydict.DictFile.rst.txt" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="dasprocessor-h5pydict-dictfile">
+<h1>dasprocessor.h5pydict.DictFile<a class="headerlink" href="#dasprocessor-h5pydict-dictfile" title="Link to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="dasprocessor.h5pydict.DictFile">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dasprocessor.h5pydict.</span></span><span class="sig-name descname"><span class="pre">DictFile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dasprocessor.h5pydict.DictFile" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">File</span></code></p>
+<p>Loads the whole hdf5-file into a dictionary tree with numpy-array data.
+Usage:
+Reading:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>with h5py.DictFile(‘test.hdf5’,’r’) as f:</dt><dd><p>data=f.load_dict()</p>
+</dd>
+</dl>
+</div></blockquote>
+<dl class="simple">
+<dt>equivalent to:</dt><dd><p>data = h5py.load(‘test.hdf5’)</p>
+</dd>
+<dt>Reading only a spesific field/group:</dt><dd><dl class="simple">
+<dt>with h5py.DictFile(‘test.hdf5’,’r’) as f:</dt><dd><p>data=f.load_dict(field=’big’)</p>
+</dd>
+</dl>
+</dd>
+<dt>equivalent to:</dt><dd><p>data = h5py.load(‘test.hdf5’,field = ‘big’)</p>
+</dd>
+<dt>Reading all data, except some spesific fields:</dt><dd><dl class="simple">
+<dt>with h5py.DictFile(‘test.hdf5’,’r’) as f:</dt><dd><p>data=f.load_dict(skipFields=[‘big’])</p>
+</dd>
+</dl>
+</dd>
+<dt>equivalent to:</dt><dd><p>data = h5py.load(‘test.hdf5’,skipFields = [‘big’])</p>
+</dd>
+<dt>Saving:</dt><dd><dl class="simple">
+<dt>with h5py.DictFile(filename,’w’) as f:</dt><dd><p>f.save_dict(data)</p>
+</dd>
+</dl>
+</dd>
+<dt>equivalent to:</dt><dd><p>h5py.save(‘test.hdf5’,data)</p>
+</dd>
+<dt>Appending to an existing file:</dt><dd><dl class="simple">
+<dt>with h5py.DictFile(filename,’a’) as f:</dt><dd><p>f.save_dict(data)</p>
+</dd>
+</dl>
+</dd>
+<dt>Only load the keys:</dt><dd><dl class="simple">
+<dt>with h5py.DictFile(‘test.hdf5’,’r’) as f:</dt><dd><p>keys=f.load_keys()</p>
+</dd>
+</dl>
+</dd>
+<dt>equivalent to:</dt><dd><p>h5py.load_keys(‘test.hdf5’)</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="dasprocessor.h5pydict.DictFile.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dasprocessor.h5pydict.DictFile.__init__" title="Link to this definition">¶</a></dt>
+<dd><section id="paramters">
+<h2>Paramters:<a class="headerlink" href="#paramters" title="Link to this heading">¶</a></h2>
+<dl class="simple">
+<dt>filename: str</dt><dd><p>name of dict file</p>
+</dd>
+<dt>mode: char</dt><dd><p>file mode: ‘r’,’w’,’a’ etc</p>
+</dd>
+<dt>verbose: bool</dt><dd><p>print out a tree view of content</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<p class="rubric">Methods</p>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.__init__" title="dasprocessor.h5pydict.DictFile.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(filename, mode[, verbose])</p></td>
+<td><p>Paramters:
+
+filename: str
+
+name of dict file
+
+mode: char
+
+file mode: 'r','w','a' etc
+
+verbose: bool
+
+print out a tree view of content</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.build_virtual_dataset" title="dasprocessor.h5pydict.DictFile.build_virtual_dataset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_virtual_dataset</span></code></a>(name, shape, dtype[, ...])</p></td>
+<td><p>Assemble a virtual dataset in this group.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.clear" title="dasprocessor.h5pydict.DictFile.clear"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clear</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.close" title="dasprocessor.h5pydict.DictFile.close"><code class="xref py py-obj docutils literal notranslate"><span class="pre">close</span></code></a>()</p></td>
+<td><p>Close the file.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.copy" title="dasprocessor.h5pydict.DictFile.copy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">copy</span></code></a>(source, dest[, name, shallow, ...])</p></td>
+<td><p>Copy an object or group.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.create_dataset" title="dasprocessor.h5pydict.DictFile.create_dataset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_dataset</span></code></a>(name[, shape, dtype, data])</p></td>
+<td><p>Create a new HDF5 dataset</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.create_dataset_like" title="dasprocessor.h5pydict.DictFile.create_dataset_like"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_dataset_like</span></code></a>(name, other, **kwupdate)</p></td>
+<td><p>Create a dataset similar to <cite>other</cite>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.create_group" title="dasprocessor.h5pydict.DictFile.create_group"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_group</span></code></a>(name[, track_order])</p></td>
+<td><p>Create and return a new subgroup.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.create_virtual_dataset" title="dasprocessor.h5pydict.DictFile.create_virtual_dataset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_virtual_dataset</span></code></a>(name, layout[, fillvalue])</p></td>
+<td><p>Create a new virtual dataset in this group.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.flush" title="dasprocessor.h5pydict.DictFile.flush"><code class="xref py py-obj docutils literal notranslate"><span class="pre">flush</span></code></a>()</p></td>
+<td><p>Tell the HDF5 library to flush its buffers.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.get" title="dasprocessor.h5pydict.DictFile.get"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get</span></code></a>(name[, default, getclass, getlink])</p></td>
+<td><p>Retrieve an item or other information.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.items" title="dasprocessor.h5pydict.DictFile.items"><code class="xref py py-obj docutils literal notranslate"><span class="pre">items</span></code></a>()</p></td>
+<td><p>Get a view object on member items</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.keys" title="dasprocessor.h5pydict.DictFile.keys"><code class="xref py py-obj docutils literal notranslate"><span class="pre">keys</span></code></a>()</p></td>
+<td><p>Get a view object on member names</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.load_dict" title="dasprocessor.h5pydict.DictFile.load_dict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_dict</span></code></a>([field, skipFields, getData])</p></td>
+<td><p>Load entire dictionary tree in hdf5 format. Parameters: ---------- field : hdf5 group or str     Only load a spesific field     If None, the whole file is loaded. skipFields: list      list of fields not to load getData : list or bool     is a list keys(at final level) that will be loaded or True to load all.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.load_keys" title="dasprocessor.h5pydict.DictFile.load_keys"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_keys</span></code></a>()</p></td>
+<td><p>Loads the hdf5-file tree into a dictionary, without the dataset.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.move" title="dasprocessor.h5pydict.DictFile.move"><code class="xref py py-obj docutils literal notranslate"><span class="pre">move</span></code></a>(source, dest)</p></td>
+<td><p>Move a link to a new location in the file.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.pop" title="dasprocessor.h5pydict.DictFile.pop"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pop</span></code></a>(k[,d])</p></td>
+<td><p>If key is not found, d is returned if given, otherwise KeyError is raised.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.popitem" title="dasprocessor.h5pydict.DictFile.popitem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">popitem</span></code></a>()</p></td>
+<td><p>as a 2-tuple; but raise KeyError if D is empty.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.require_dataset" title="dasprocessor.h5pydict.DictFile.require_dataset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">require_dataset</span></code></a>(name, shape, dtype[, exact])</p></td>
+<td><p>Open a dataset, creating it if it doesn't exist.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.require_group" title="dasprocessor.h5pydict.DictFile.require_group"><code class="xref py py-obj docutils literal notranslate"><span class="pre">require_group</span></code></a>(name)</p></td>
+<td><p>Return a group, creating it if it doesn't exist.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.save_dict" title="dasprocessor.h5pydict.DictFile.save_dict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_dict</span></code></a>(data)</p></td>
+<td><p>Save entire dictionary tree in hdf5 format</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.setdefault" title="dasprocessor.h5pydict.DictFile.setdefault"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setdefault</span></code></a>(k[,d])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.update" title="dasprocessor.h5pydict.DictFile.update"><code class="xref py py-obj docutils literal notranslate"><span class="pre">update</span></code></a>([E, ]**F)</p></td>
+<td><p>If E present and has a .keys() method, does:     for k in E: D[k] = E[k] If E present and lacks .keys() method, does:     for (k, v) in E: D[k] = v In either case, this is followed by: for k, v in F.items(): D[k] = v</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.values" title="dasprocessor.h5pydict.DictFile.values"><code class="xref py py-obj docutils literal notranslate"><span class="pre">values</span></code></a>()</p></td>
+<td><p>Get a view object on member objects</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.visit" title="dasprocessor.h5pydict.DictFile.visit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">visit</span></code></a>(func)</p></td>
+<td><p>Recursively visit all names in this group and subgroups.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.visit_links" title="dasprocessor.h5pydict.DictFile.visit_links"><code class="xref py py-obj docutils literal notranslate"><span class="pre">visit_links</span></code></a>(func)</p></td>
+<td><p>Recursively visit all names in this group and subgroups.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.visititems" title="dasprocessor.h5pydict.DictFile.visititems"><code class="xref py py-obj docutils literal notranslate"><span class="pre">visititems</span></code></a>(func)</p></td>
+<td><p>Recursively visit names and objects in this group.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.visititems_links" title="dasprocessor.h5pydict.DictFile.visititems_links"><code class="xref py py-obj docutils literal notranslate"><span class="pre">visititems_links</span></code></a>(func)</p></td>
+<td><p>Recursively visit links in this group.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p class="rubric">Attributes</p>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.attrs" title="dasprocessor.h5pydict.DictFile.attrs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">attrs</span></code></a></p></td>
+<td><p>Attributes attached to this object</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.driver" title="dasprocessor.h5pydict.DictFile.driver"><code class="xref py py-obj docutils literal notranslate"><span class="pre">driver</span></code></a></p></td>
+<td><p>Low-level HDF5 file driver used to open file</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.file" title="dasprocessor.h5pydict.DictFile.file"><code class="xref py py-obj docutils literal notranslate"><span class="pre">file</span></code></a></p></td>
+<td><p>Return a File instance associated with this object</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.filename" title="dasprocessor.h5pydict.DictFile.filename"><code class="xref py py-obj docutils literal notranslate"><span class="pre">filename</span></code></a></p></td>
+<td><p>File name on disk</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.id" title="dasprocessor.h5pydict.DictFile.id"><code class="xref py py-obj docutils literal notranslate"><span class="pre">id</span></code></a></p></td>
+<td><p>Low-level identifier appropriate for this object</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.libver" title="dasprocessor.h5pydict.DictFile.libver"><code class="xref py py-obj docutils literal notranslate"><span class="pre">libver</span></code></a></p></td>
+<td><p>File format version bounds (2-tuple: low, high)</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.meta_block_size" title="dasprocessor.h5pydict.DictFile.meta_block_size"><code class="xref py py-obj docutils literal notranslate"><span class="pre">meta_block_size</span></code></a></p></td>
+<td><p>Meta block size (in bytes)</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.mode" title="dasprocessor.h5pydict.DictFile.mode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mode</span></code></a></p></td>
+<td><p>Python mode used to open file</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.name" title="dasprocessor.h5pydict.DictFile.name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">name</span></code></a></p></td>
+<td><p>Return the full name of this object.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.parent" title="dasprocessor.h5pydict.DictFile.parent"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parent</span></code></a></p></td>
+<td><p>Return the parent group of this object.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.ref" title="dasprocessor.h5pydict.DictFile.ref"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ref</span></code></a></p></td>
+<td><p>An (opaque) HDF5 reference to this object</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.regionref" title="dasprocessor.h5pydict.DictFile.regionref"><code class="xref py py-obj docutils literal notranslate"><span class="pre">regionref</span></code></a></p></td>
+<td><p>Create a region reference (Datasets only).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.swmr_mode" title="dasprocessor.h5pydict.DictFile.swmr_mode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">swmr_mode</span></code></a></p></td>
+<td><p>Controls single-writer multiple-reader mode</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.userblock_size" title="dasprocessor.h5pydict.DictFile.userblock_size"><code class="xref py py-obj docutils literal notranslate"><span class="pre">userblock_size</span></code></a></p></td>
+<td><p>User block size (in bytes)</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<dl class="py property">
+<dt class="sig sig-object py" id="dasprocessor.h5pydict.DictFile.attrs">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">attrs</span></span><a class="headerlink" href="#dasprocessor.h5pydict.DictFile.attrs" title="Link to this definition">¶</a></dt>
+<dd><p>Attributes attached to this object</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dasprocessor.h5pydict.DictFile.build_virtual_dataset">
+<span class="sig-name descname"><span class="pre">build_virtual_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shape</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxshape</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fillvalue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dasprocessor.h5pydict.DictFile.build_virtual_dataset" title="Link to this definition">¶</a></dt>
+<dd><p>Assemble a virtual dataset in this group.</p>
+<p>This is used as a context manager:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">f</span><span class="o">.</span><span class="n">build_virtual_dataset</span><span class="p">(</span><span class="s1">&#39;virt&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">1000</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">uint32</span><span class="p">)</span> <span class="k">as</span> <span class="n">layout</span><span class="p">:</span>
+    <span class="n">layout</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">VirtualSource</span><span class="p">(</span><span class="s1">&#39;foo.h5&#39;</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">1000</span><span class="p">,))</span>
+</pre></div>
+</div>
+<dl class="simple">
+<dt>name</dt><dd><p>(str) Name of the new dataset</p>
+</dd>
+<dt>shape</dt><dd><p>(tuple) Shape of the dataset</p>
+</dd>
+<dt>dtype</dt><dd><p>A numpy dtype for data read from the virtual dataset</p>
+</dd>
+<dt>maxshape</dt><dd><p>(tuple, optional) Maximum dimensions if the dataset can grow.
+Use None for unlimited dimensions.</p>
+</dd>
+<dt>fillvalue</dt><dd><p>The value used where no data is available.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dasprocessor.h5pydict.DictFile.clear">
+<span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None.</span>&#160; <span class="pre">Remove</span> <span class="pre">all</span> <span class="pre">items</span> <span class="pre">from</span> <span class="pre">D.</span></span></span><a class="headerlink" href="#dasprocessor.h5pydict.DictFile.clear" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dasprocessor.h5pydict.DictFile.close">
+<span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dasprocessor.h5pydict.DictFile.close" title="Link to this definition">¶</a></dt>
+<dd><p>Close the file.  All open objects become invalid</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dasprocessor.h5pydict.DictFile.copy">
+<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dest</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shallow</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expand_soft</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expand_external</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expand_refs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">without_attrs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dasprocessor.h5pydict.DictFile.copy" title="Link to this definition">¶</a></dt>
+<dd><p>Copy an object or group.</p>
+<blockquote>
+<div><p>The source can be a path, Group, Dataset, or Datatype object.  The
+destination can be either a path or a Group object.  The source and
+destinations need not be in the same file.</p>
+<p>If the source is a Group object, all objects contained in that group
+will be copied recursively.</p>
+<p>When the destination is a Group object, by default the target will
+be created in that group with its current name (basename of obj.name).
+You can override that by setting “name” to a string.</p>
+<p>There are various options which all default to “False”:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>shallow: copy only immediate members of a group.</p></li>
+<li><p>expand_soft: expand soft links into new objects.</p></li>
+<li><p>expand_external: expand external links into new objects.</p></li>
+<li><p>expand_refs: copy objects that are pointed to by references.</p></li>
+<li><p>without_attrs: copy object without copying attributes.</p></li>
+</ul>
+</div></blockquote>
+</div></blockquote>
+<p>Example:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">f</span> <span class="o">=</span> <span class="n">File</span><span class="p">(</span><span class="s1">&#39;myfile.hdf5&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="s2">&quot;MyGroup&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+<span class="go">[&#39;MyGroup&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="s1">&#39;MyGroup&#39;</span><span class="p">,</span> <span class="s1">&#39;MyCopy&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+<span class="go">[&#39;MyGroup&#39;, &#39;MyCopy&#39;]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dasprocessor.h5pydict.DictFile.create_dataset">
+<span class="sig-name descname"><span class="pre">create_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shape</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dasprocessor.h5pydict.DictFile.create_dataset" title="Link to this definition">¶</a></dt>
+<dd><p>Create a new HDF5 dataset</p>
+<dl class="simple">
+<dt>name</dt><dd><p>Name of the dataset (absolute or relative).  Provide None to make
+an anonymous dataset.</p>
+</dd>
+<dt>shape</dt><dd><p>Dataset shape.  Use “()” for scalar datasets.  Required if “data”
+isn’t provided.</p>
+</dd>
+<dt>dtype</dt><dd><p>Numpy dtype or string.  If omitted, dtype(‘f’) will be used.
+Required if “data” isn’t provided; otherwise, overrides data
+array’s dtype.</p>
+</dd>
+<dt>data</dt><dd><p>Provide data to initialize the dataset.  If used, you can omit
+shape and dtype arguments.</p>
+</dd>
+</dl>
+<p>Keyword-only arguments:</p>
+<dl class="simple">
+<dt>chunks</dt><dd><p>(Tuple or int) Chunk shape, or True to enable auto-chunking. Integers can
+be used for 1D shape.</p>
+</dd>
+<dt>maxshape</dt><dd><p>(Tuple or int) Make the dataset resizable up to this shape. Use None for
+axes you want to be unlimited. Integers can be used for 1D shape.</p>
+</dd>
+<dt>compression</dt><dd><p>(String or int) Compression strategy.  Legal values are ‘gzip’,
+‘szip’, ‘lzf’.  If an integer in range(10), this indicates gzip
+compression level. Otherwise, an integer indicates the number of a
+dynamically loaded compression filter.</p>
+</dd>
+<dt>compression_opts</dt><dd><p>Compression settings.  This is an integer for gzip, 2-tuple for
+szip, etc. If specifying a dynamically loaded compression filter
+number, this must be a tuple of values.</p>
+</dd>
+<dt>scaleoffset</dt><dd><p>(Integer) Enable scale/offset filter for (usually) lossy
+compression of integer or floating-point data. For integer
+data, the value of scaleoffset is the number of bits to
+retain (pass 0 to let HDF5 determine the minimum number of
+bits necessary for lossless compression). For floating point
+data, scaleoffset is the number of digits after the decimal
+place to retain; stored values thus have absolute error
+less than 0.5*10**(-scaleoffset).</p>
+</dd>
+<dt>shuffle</dt><dd><p>(T/F) Enable shuffle filter.</p>
+</dd>
+<dt>fletcher32</dt><dd><p>(T/F) Enable fletcher32 error detection. Not permitted in
+conjunction with the scale/offset filter.</p>
+</dd>
+<dt>fillvalue</dt><dd><p>(Scalar) Use this value for uninitialized parts of the dataset.</p>
+</dd>
+<dt>track_times</dt><dd><p>(T/F) Enable dataset creation timestamps.</p>
+</dd>
+<dt>track_order</dt><dd><p>(T/F) Track attribute creation order if True. If omitted use
+global default h5.get_config().track_order.</p>
+</dd>
+<dt>external</dt><dd><p>(Iterable of tuples) Sets the external storage property, thus
+designating that the dataset will be stored in one or more
+non-HDF5 files external to the HDF5 file.  Adds each tuple
+of (name, offset, size) to the dataset’s list of external files.
+Each name must be a str, bytes, or os.PathLike; each offset and
+size, an integer.  If only a name is given instead of an iterable
+of tuples, it is equivalent to [(name, 0, h5py.h5f.UNLIMITED)].</p>
+</dd>
+<dt>efile_prefix</dt><dd><p>(String) External dataset file prefix for dataset access property
+list. Does not persist in the file.</p>
+</dd>
+<dt>virtual_prefix</dt><dd><p>(String) Virtual dataset file prefix for dataset access property
+list. Does not persist in the file.</p>
+</dd>
+<dt>allow_unknown_filter</dt><dd><p>(T/F) Do not check that the requested filter is available for use.
+This should only be used with <code class="docutils literal notranslate"><span class="pre">write_direct_chunk</span></code>, where the caller
+compresses the data before handing it to h5py.</p>
+</dd>
+<dt>rdcc_nbytes</dt><dd><p>Total size of the dataset’s chunk cache in bytes. The default size
+is 1024**2 (1 MiB).</p>
+</dd>
+<dt>rdcc_w0</dt><dd><p>The chunk preemption policy for this dataset.  This must be
+between 0 and 1 inclusive and indicates the weighting according to
+which chunks which have been fully read or written are penalized
+when determining which chunks to flush from cache.  A value of 0
+means fully read or written chunks are treated no differently than
+other chunks (the preemption is strictly LRU) while a value of 1
+means fully read or written chunks are always preempted before
+other chunks.  If your application only reads or writes data once,
+this can be safely set to 1.  Otherwise, this should be set lower
+depending on how often you re-read or re-write the same data.  The
+default value is 0.75.</p>
+</dd>
+<dt>rdcc_nslots</dt><dd><p>The number of chunk slots in the dataset’s chunk cache. Increasing
+this value reduces the number of cache collisions, but slightly
+increases the memory used. Due to the hashing strategy, this value
+should ideally be a prime number. As a rule of thumb, this value
+should be at least 10 times the number of chunks that can fit in
+rdcc_nbytes bytes. For maximum performance, this value should be set
+approximately 100 times that number of chunks. The default value is
+521.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dasprocessor.h5pydict.DictFile.create_dataset_like">
+<span class="sig-name descname"><span class="pre">create_dataset_like</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">other</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwupdate</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dasprocessor.h5pydict.DictFile.create_dataset_like" title="Link to this definition">¶</a></dt>
+<dd><p>Create a dataset similar to <cite>other</cite>.</p>
+<dl class="simple">
+<dt>name</dt><dd><p>Name of the dataset (absolute or relative).  Provide None to make
+an anonymous dataset.</p>
+</dd>
+<dt>other</dt><dd><p>The dataset which the new dataset should mimic. All properties, such
+as shape, dtype, chunking, … will be taken from it, but no data
+or attributes are being copied.</p>
+</dd>
+</dl>
+<p>Any dataset keywords (see create_dataset) may be provided, including
+shape and dtype, in which case the provided values take precedence over
+those from <cite>other</cite>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dasprocessor.h5pydict.DictFile.create_group">
+<span class="sig-name descname"><span class="pre">create_group</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">track_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dasprocessor.h5pydict.DictFile.create_group" title="Link to this definition">¶</a></dt>
+<dd><p>Create and return a new subgroup.</p>
+<p>Name may be absolute or relative.  Fails if the target name already
+exists.</p>
+<dl class="simple">
+<dt>track_order</dt><dd><p>Track dataset/group/attribute creation order under this group
+if True. If None use global default h5.get_config().track_order.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dasprocessor.h5pydict.DictFile.create_virtual_dataset">
+<span class="sig-name descname"><span class="pre">create_virtual_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layout</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fillvalue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dasprocessor.h5pydict.DictFile.create_virtual_dataset" title="Link to this definition">¶</a></dt>
+<dd><p>Create a new virtual dataset in this group.</p>
+<p>See virtual datasets in the docs for more information.</p>
+<dl class="simple">
+<dt>name</dt><dd><p>(str) Name of the new dataset</p>
+</dd>
+<dt>layout</dt><dd><p>(VirtualLayout) Defines the sources for the virtual dataset</p>
+</dd>
+<dt>fillvalue</dt><dd><p>The value to use where there is no data.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="dasprocessor.h5pydict.DictFile.driver">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">driver</span></span><a class="headerlink" href="#dasprocessor.h5pydict.DictFile.driver" title="Link to this definition">¶</a></dt>
+<dd><p>Low-level HDF5 file driver used to open file</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="dasprocessor.h5pydict.DictFile.file">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">file</span></span><a class="headerlink" href="#dasprocessor.h5pydict.DictFile.file" title="Link to this definition">¶</a></dt>
+<dd><p>Return a File instance associated with this object</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="dasprocessor.h5pydict.DictFile.filename">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">filename</span></span><a class="headerlink" href="#dasprocessor.h5pydict.DictFile.filename" title="Link to this definition">¶</a></dt>
+<dd><p>File name on disk</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dasprocessor.h5pydict.DictFile.flush">
+<span class="sig-name descname"><span class="pre">flush</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dasprocessor.h5pydict.DictFile.flush" title="Link to this definition">¶</a></dt>
+<dd><p>Tell the HDF5 library to flush its buffers.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dasprocessor.h5pydict.DictFile.get">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">getclass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">getlink</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dasprocessor.h5pydict.DictFile.get" title="Link to this definition">¶</a></dt>
+<dd><p>Retrieve an item or other information.</p>
+<dl class="simple">
+<dt>“name” given only:</dt><dd><p>Return the item, or “default” if it doesn’t exist</p>
+</dd>
+<dt>“getclass” is True:</dt><dd><p>Return the class of object (Group, Dataset, etc.), or “default”
+if nothing with that name exists</p>
+</dd>
+<dt>“getlink” is True:</dt><dd><p>Return HardLink, SoftLink or ExternalLink instances.  Return
+“default” if nothing with that name exists.</p>
+</dd>
+<dt>“getlink” and “getclass” are True:</dt><dd><p>Return HardLink, SoftLink and ExternalLink classes.  Return
+“default” if nothing with that name exists.</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="bp">cls</span> <span class="o">=</span> <span class="n">group</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="n">getclass</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">if</span> <span class="bp">cls</span> <span class="o">==</span> <span class="n">SoftLink</span><span class="p">:</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="dasprocessor.h5pydict.DictFile.id">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#dasprocessor.h5pydict.DictFile.id" title="Link to this definition">¶</a></dt>
+<dd><p>Low-level identifier appropriate for this object</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dasprocessor.h5pydict.DictFile.items">
+<span class="sig-name descname"><span class="pre">items</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dasprocessor.h5pydict.DictFile.items" title="Link to this definition">¶</a></dt>
+<dd><p>Get a view object on member items</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dasprocessor.h5pydict.DictFile.keys">
+<span class="sig-name descname"><span class="pre">keys</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dasprocessor.h5pydict.DictFile.keys" title="Link to this definition">¶</a></dt>
+<dd><p>Get a view object on member names</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="dasprocessor.h5pydict.DictFile.libver">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">libver</span></span><a class="headerlink" href="#dasprocessor.h5pydict.DictFile.libver" title="Link to this definition">¶</a></dt>
+<dd><p>File format version bounds (2-tuple: low, high)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dasprocessor.h5pydict.DictFile.load_dict">
+<span class="sig-name descname"><span class="pre">load_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skipFields</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">getData</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dasprocessor.h5pydict.DictFile.load_dict" title="Link to this definition">¶</a></dt>
+<dd><p>Load entire dictionary tree in hdf5 format.
+Parameters:
+———-
+field : hdf5 group or str</p>
+<blockquote>
+<div><p>Only load a spesific field
+If None, the whole file is loaded.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>skipFields: list </dt><dd><p>list of fields not to load</p>
+</dd>
+<dt>getData<span class="classifier">list or bool</span></dt><dd><p>is a list keys(at final level) that will be loaded or True to load all.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dasprocessor.h5pydict.DictFile.load_keys">
+<span class="sig-name descname"><span class="pre">load_keys</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dasprocessor.h5pydict.DictFile.load_keys" title="Link to this definition">¶</a></dt>
+<dd><p>Loads the hdf5-file tree into a dictionary, without the dataset.
+Instead the datasets are replaced by a tuple with the shape of array.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="dasprocessor.h5pydict.DictFile.meta_block_size">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">meta_block_size</span></span><a class="headerlink" href="#dasprocessor.h5pydict.DictFile.meta_block_size" title="Link to this definition">¶</a></dt>
+<dd><p>Meta block size (in bytes)</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="dasprocessor.h5pydict.DictFile.mode">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mode</span></span><a class="headerlink" href="#dasprocessor.h5pydict.DictFile.mode" title="Link to this definition">¶</a></dt>
+<dd><p>Python mode used to open file</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dasprocessor.h5pydict.DictFile.move">
+<span class="sig-name descname"><span class="pre">move</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dest</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dasprocessor.h5pydict.DictFile.move" title="Link to this definition">¶</a></dt>
+<dd><p>Move a link to a new location in the file.</p>
+<p>If “source” is a hard link, this effectively renames the object.  If
+“source” is a soft or external link, the link itself is moved, with its
+value unmodified.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="dasprocessor.h5pydict.DictFile.name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#dasprocessor.h5pydict.DictFile.name" title="Link to this definition">¶</a></dt>
+<dd><p>Return the full name of this object.  None if anonymous.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="dasprocessor.h5pydict.DictFile.parent">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">parent</span></span><a class="headerlink" href="#dasprocessor.h5pydict.DictFile.parent" title="Link to this definition">¶</a></dt>
+<dd><p>Return the parent group of this object.</p>
+<p>This is always equivalent to obj.file[posixpath.dirname(obj.name)].
+ValueError if this object is anonymous.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dasprocessor.h5pydict.DictFile.pop">
+<span class="sig-name descname"><span class="pre">pop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">k</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">d</span></span></em><span class="optional">]</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">v,</span> <span class="pre">remove</span> <span class="pre">specified</span> <span class="pre">key</span> <span class="pre">and</span> <span class="pre">return</span> <span class="pre">the</span> <span class="pre">corresponding</span> <span class="pre">value.</span></span></span><a class="headerlink" href="#dasprocessor.h5pydict.DictFile.pop" title="Link to this definition">¶</a></dt>
+<dd><p>If key is not found, d is returned if given, otherwise KeyError is raised.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dasprocessor.h5pydict.DictFile.popitem">
+<span class="sig-name descname"><span class="pre">popitem</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">(k,</span> <span class="pre">v),</span> <span class="pre">remove</span> <span class="pre">and</span> <span class="pre">return</span> <span class="pre">some</span> <span class="pre">(key,</span> <span class="pre">value)</span> <span class="pre">pair</span></span></span><a class="headerlink" href="#dasprocessor.h5pydict.DictFile.popitem" title="Link to this definition">¶</a></dt>
+<dd><p>as a 2-tuple; but raise KeyError if D is empty.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="dasprocessor.h5pydict.DictFile.ref">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ref</span></span><a class="headerlink" href="#dasprocessor.h5pydict.DictFile.ref" title="Link to this definition">¶</a></dt>
+<dd><p>An (opaque) HDF5 reference to this object</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="dasprocessor.h5pydict.DictFile.regionref">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">regionref</span></span><a class="headerlink" href="#dasprocessor.h5pydict.DictFile.regionref" title="Link to this definition">¶</a></dt>
+<dd><p>Create a region reference (Datasets only).</p>
+<p>The syntax is regionref[&lt;slices&gt;]. For example, dset.regionref[…]
+creates a region reference in which the whole dataset is selected.</p>
+<p>Can also be used to determine the shape of the referenced dataset
+(via .shape property), or the shape of the selection (via the
+.selection property).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dasprocessor.h5pydict.DictFile.require_dataset">
+<span class="sig-name descname"><span class="pre">require_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shape</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exact</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dasprocessor.h5pydict.DictFile.require_dataset" title="Link to this definition">¶</a></dt>
+<dd><p>Open a dataset, creating it if it doesn’t exist.</p>
+<p>If keyword “exact” is False (default), an existing dataset must have
+the same shape and a conversion-compatible dtype to be returned.  If
+True, the shape and dtype must match exactly.</p>
+<p>If keyword “maxshape” is given, the maxshape and dtype must match
+instead.</p>
+<p>If any of the keywords “rdcc_nslots”, “rdcc_nbytes”, or “rdcc_w0” are
+given, they will be used to configure the dataset’s chunk cache.</p>
+<p>Other dataset keywords (see create_dataset) may be provided, but are
+only used if a new dataset is to be created.</p>
+<p>Raises TypeError if an incompatible object already exists, or if the
+shape, maxshape or dtype don’t match according to the above rules.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dasprocessor.h5pydict.DictFile.require_group">
+<span class="sig-name descname"><span class="pre">require_group</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dasprocessor.h5pydict.DictFile.require_group" title="Link to this definition">¶</a></dt>
+<dd><p>Return a group, creating it if it doesn’t exist.</p>
+<p>TypeError is raised if something with that name already exists that
+isn’t a group.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dasprocessor.h5pydict.DictFile.save_dict">
+<span class="sig-name descname"><span class="pre">save_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dasprocessor.h5pydict.DictFile.save_dict" title="Link to this definition">¶</a></dt>
+<dd><p>Save entire dictionary tree in hdf5 format</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dasprocessor.h5pydict.DictFile.setdefault">
+<span class="sig-name descname"><span class="pre">setdefault</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">k</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">d</span></span></em><span class="optional">]</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">D.get(k,d),</span> <span class="pre">also</span> <span class="pre">set</span> <span class="pre">D[k]=d</span> <span class="pre">if</span> <span class="pre">k</span> <span class="pre">not</span> <span class="pre">in</span> <span class="pre">D</span></span></span><a class="headerlink" href="#dasprocessor.h5pydict.DictFile.setdefault" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="dasprocessor.h5pydict.DictFile.swmr_mode">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">swmr_mode</span></span><a class="headerlink" href="#dasprocessor.h5pydict.DictFile.swmr_mode" title="Link to this definition">¶</a></dt>
+<dd><p>Controls single-writer multiple-reader mode</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dasprocessor.h5pydict.DictFile.update">
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><span class="optional">[</span><em class="sig-param"><span class="n"><span class="pre">E</span></span></em>, <span class="optional">]</span><em class="sig-param"><span class="n"><span class="pre">**F</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None.</span>&#160; <span class="pre">Update</span> <span class="pre">D</span> <span class="pre">from</span> <span class="pre">mapping/iterable</span> <span class="pre">E</span> <span class="pre">and</span> <span class="pre">F.</span></span></span><a class="headerlink" href="#dasprocessor.h5pydict.DictFile.update" title="Link to this definition">¶</a></dt>
+<dd><p>If E present and has a .keys() method, does:     for k in E: D[k] = E[k]
+If E present and lacks .keys() method, does:     for (k, v) in E: D[k] = v
+In either case, this is followed by: for k, v in F.items(): D[k] = v</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="dasprocessor.h5pydict.DictFile.userblock_size">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">userblock_size</span></span><a class="headerlink" href="#dasprocessor.h5pydict.DictFile.userblock_size" title="Link to this definition">¶</a></dt>
+<dd><p>User block size (in bytes)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dasprocessor.h5pydict.DictFile.values">
+<span class="sig-name descname"><span class="pre">values</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dasprocessor.h5pydict.DictFile.values" title="Link to this definition">¶</a></dt>
+<dd><p>Get a view object on member objects</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dasprocessor.h5pydict.DictFile.visit">
+<span class="sig-name descname"><span class="pre">visit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dasprocessor.h5pydict.DictFile.visit" title="Link to this definition">¶</a></dt>
+<dd><p>Recursively visit all names in this group and subgroups.</p>
+<p>Note: visit ignores soft and external links. To visit those, use
+visit_links.</p>
+<p>You supply a callable (function, method or callable object); it
+will be called exactly once for each link in this group and every
+group below it. Your callable must conform to the signature:</p>
+<blockquote>
+<div><p>func(&lt;member name&gt;) =&gt; &lt;None or return value&gt;</p>
+</div></blockquote>
+<p>Returning None continues iteration, returning anything else stops
+and immediately returns that value from the visit method.  No
+particular order of iteration within groups is guaranteed.</p>
+<p>Example:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># List the entire contents of the file</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span> <span class="o">=</span> <span class="n">File</span><span class="p">(</span><span class="s2">&quot;foo.hdf5&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">list_of_names</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">visit</span><span class="p">(</span><span class="n">list_of_names</span><span class="o">.</span><span class="n">append</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dasprocessor.h5pydict.DictFile.visit_links">
+<span class="sig-name descname"><span class="pre">visit_links</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dasprocessor.h5pydict.DictFile.visit_links" title="Link to this definition">¶</a></dt>
+<dd><p>Recursively visit all names in this group and subgroups.
+Each link will be visited exactly once, regardless of its target.</p>
+<p>You supply a callable (function, method or callable object); it
+will be called exactly once for each link in this group and every
+group below it. Your callable must conform to the signature:</p>
+<blockquote>
+<div><p>func(&lt;member name&gt;) =&gt; &lt;None or return value&gt;</p>
+</div></blockquote>
+<p>Returning None continues iteration, returning anything else stops
+and immediately returns that value from the visit method.  No
+particular order of iteration within groups is guaranteed.</p>
+<p>Example:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># List the entire contents of the file</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span> <span class="o">=</span> <span class="n">File</span><span class="p">(</span><span class="s2">&quot;foo.hdf5&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">list_of_names</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="o">.</span><span class="n">visit_links</span><span class="p">(</span><span class="n">list_of_names</span><span class="o">.</span><span class="n">append</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dasprocessor.h5pydict.DictFile.visititems">
+<span class="sig-name descname"><span class="pre">visititems</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dasprocessor.h5pydict.DictFile.visititems" title="Link to this definition">¶</a></dt>
+<dd><p>Recursively visit names and objects in this group.</p>
+<p>Note: visititems ignores soft and external links. To visit those, use
+visititems_links.</p>
+<p>You supply a callable (function, method or callable object); it
+will be called exactly once for each link in this group and every
+group below it. Your callable must conform to the signature:</p>
+<blockquote>
+<div><p>func(&lt;member name&gt;, &lt;object&gt;) =&gt; &lt;None or return value&gt;</p>
+</div></blockquote>
+<p>Returning None continues iteration, returning anything else stops
+and immediately returns that value from the visit method.  No
+particular order of iteration within groups is guaranteed.</p>
+<p>Example:</p>
+<p># Get a list of all datasets in the file
+&gt;&gt;&gt; mylist = []
+&gt;&gt;&gt; def func(name, obj):
+…     if isinstance(obj, Dataset):
+…         mylist.append(name)
+…
+&gt;&gt;&gt; f = File(‘foo.hdf5’)
+&gt;&gt;&gt; f.visititems(func)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dasprocessor.h5pydict.DictFile.visititems_links">
+<span class="sig-name descname"><span class="pre">visititems_links</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dasprocessor.h5pydict.DictFile.visititems_links" title="Link to this definition">¶</a></dt>
+<dd><p>Recursively visit links in this group.
+Each link will be visited exactly once, regardless of its target.</p>
+<p>You supply a callable (function, method or callable object); it
+will be called exactly once for each link in this group and every
+group below it. Your callable must conform to the signature:</p>
+<blockquote>
+<div><p>func(&lt;member name&gt;, &lt;link&gt;) =&gt; &lt;None or return value&gt;</p>
+</div></blockquote>
+<p>Returning None continues iteration, returning anything else stops
+and immediately returns that value from the visit method.  No
+particular order of iteration within groups is guaranteed.</p>
+<p>Example:</p>
+<p># Get a list of all softlinks in the file
+&gt;&gt;&gt; mylist = []
+&gt;&gt;&gt; def func(name, link):
+…     if isinstance(link, SoftLink):
+…         mylist.append(name)
+…
+&gt;&gt;&gt; f = File(‘foo.hdf5’)
+&gt;&gt;&gt; f.visititems_links(func)</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          
+          
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2025, Emil Wengle
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">dasprocessor.h5pydict.DictFile</a><ul>
+<li><a class="reference internal" href="#dasprocessor.h5pydict.DictFile"><code class="docutils literal notranslate"><span class="pre">DictFile</span></code></a><ul>
+<li><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.__init__"><code class="docutils literal notranslate"><span class="pre">DictFile.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.attrs"><code class="docutils literal notranslate"><span class="pre">DictFile.attrs</span></code></a></li>
+<li><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.build_virtual_dataset"><code class="docutils literal notranslate"><span class="pre">DictFile.build_virtual_dataset()</span></code></a></li>
+<li><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.clear"><code class="docutils literal notranslate"><span class="pre">DictFile.clear()</span></code></a></li>
+<li><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.close"><code class="docutils literal notranslate"><span class="pre">DictFile.close()</span></code></a></li>
+<li><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.copy"><code class="docutils literal notranslate"><span class="pre">DictFile.copy()</span></code></a></li>
+<li><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.create_dataset"><code class="docutils literal notranslate"><span class="pre">DictFile.create_dataset()</span></code></a></li>
+<li><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.create_dataset_like"><code class="docutils literal notranslate"><span class="pre">DictFile.create_dataset_like()</span></code></a></li>
+<li><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.create_group"><code class="docutils literal notranslate"><span class="pre">DictFile.create_group()</span></code></a></li>
+<li><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.create_virtual_dataset"><code class="docutils literal notranslate"><span class="pre">DictFile.create_virtual_dataset()</span></code></a></li>
+<li><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.driver"><code class="docutils literal notranslate"><span class="pre">DictFile.driver</span></code></a></li>
+<li><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.file"><code class="docutils literal notranslate"><span class="pre">DictFile.file</span></code></a></li>
+<li><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.filename"><code class="docutils literal notranslate"><span class="pre">DictFile.filename</span></code></a></li>
+<li><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.flush"><code class="docutils literal notranslate"><span class="pre">DictFile.flush()</span></code></a></li>
+<li><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.get"><code class="docutils literal notranslate"><span class="pre">DictFile.get()</span></code></a></li>
+<li><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.id"><code class="docutils literal notranslate"><span class="pre">DictFile.id</span></code></a></li>
+<li><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.items"><code class="docutils literal notranslate"><span class="pre">DictFile.items()</span></code></a></li>
+<li><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.keys"><code class="docutils literal notranslate"><span class="pre">DictFile.keys()</span></code></a></li>
+<li><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.libver"><code class="docutils literal notranslate"><span class="pre">DictFile.libver</span></code></a></li>
+<li><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.load_dict"><code class="docutils literal notranslate"><span class="pre">DictFile.load_dict()</span></code></a></li>
+<li><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.load_keys"><code class="docutils literal notranslate"><span class="pre">DictFile.load_keys()</span></code></a></li>
+<li><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.meta_block_size"><code class="docutils literal notranslate"><span class="pre">DictFile.meta_block_size</span></code></a></li>
+<li><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.mode"><code class="docutils literal notranslate"><span class="pre">DictFile.mode</span></code></a></li>
+<li><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.move"><code class="docutils literal notranslate"><span class="pre">DictFile.move()</span></code></a></li>
+<li><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.name"><code class="docutils literal notranslate"><span class="pre">DictFile.name</span></code></a></li>
+<li><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.parent"><code class="docutils literal notranslate"><span class="pre">DictFile.parent</span></code></a></li>
+<li><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.pop"><code class="docutils literal notranslate"><span class="pre">DictFile.pop()</span></code></a></li>
+<li><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.popitem"><code class="docutils literal notranslate"><span class="pre">DictFile.popitem()</span></code></a></li>
+<li><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.ref"><code class="docutils literal notranslate"><span class="pre">DictFile.ref</span></code></a></li>
+<li><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.regionref"><code class="docutils literal notranslate"><span class="pre">DictFile.regionref</span></code></a></li>
+<li><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.require_dataset"><code class="docutils literal notranslate"><span class="pre">DictFile.require_dataset()</span></code></a></li>
+<li><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.require_group"><code class="docutils literal notranslate"><span class="pre">DictFile.require_group()</span></code></a></li>
+<li><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.save_dict"><code class="docutils literal notranslate"><span class="pre">DictFile.save_dict()</span></code></a></li>
+<li><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.setdefault"><code class="docutils literal notranslate"><span class="pre">DictFile.setdefault()</span></code></a></li>
+<li><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.swmr_mode"><code class="docutils literal notranslate"><span class="pre">DictFile.swmr_mode</span></code></a></li>
+<li><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.update"><code class="docutils literal notranslate"><span class="pre">DictFile.update()</span></code></a></li>
+<li><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.userblock_size"><code class="docutils literal notranslate"><span class="pre">DictFile.userblock_size</span></code></a></li>
+<li><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.values"><code class="docutils literal notranslate"><span class="pre">DictFile.values()</span></code></a></li>
+<li><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.visit"><code class="docutils literal notranslate"><span class="pre">DictFile.visit()</span></code></a></li>
+<li><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.visit_links"><code class="docutils literal notranslate"><span class="pre">DictFile.visit_links()</span></code></a></li>
+<li><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.visititems"><code class="docutils literal notranslate"><span class="pre">DictFile.visititems()</span></code></a></li>
+<li><a class="reference internal" href="#dasprocessor.h5pydict.DictFile.visititems_links"><code class="docutils literal notranslate"><span class="pre">DictFile.visititems_links()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/scripts/furo.js?v=5fa4622c"></script>
+    </body>
+</html>
