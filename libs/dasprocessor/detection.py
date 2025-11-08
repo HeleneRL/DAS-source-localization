@@ -160,7 +160,7 @@ def main():
     myrun["offset_in_samples"] += meta["signal_starting_points"][
         meta["signal_sequence"].index(band)]
     #for it in range(300, 312, 12):
-    for it in [220]: 
+    for it in [232]: 
         wantedchans = slice(it, it+12)
         mydata = load_interrogator_data(
                 r"D:\DASComms_25kHz_GL_2m\20240503\dphi",
@@ -178,7 +178,7 @@ def main():
                                             wantedchans.start,
                                             {
                                                 "distance": 500000,  #emil set to 500000
-                                                "height": 0.01/2    #I halfed emils value to see if i get more peaks
+                                                "height": 0.01    
                                                 #"prominence": 0.002   #I added prominence
                                             },
                                             myrun,

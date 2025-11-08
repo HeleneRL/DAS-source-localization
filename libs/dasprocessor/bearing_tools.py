@@ -247,7 +247,7 @@ def _linear_fit_with_outlier_reject(x: np.ndarray, y: np.ndarray,
     else:
         return a, b, mask
 
-
+'''
 def estimate_bearings_for_packets(
     arrivals: Mapping[int, Mapping[int, int]],
     subarrays: Mapping[int, Sequence[int]],
@@ -358,14 +358,16 @@ def estimate_bearings_for_packets(
                 results[c][k] = None
                 continue
 
-            # g = dt/ds (s per meter). Convert to incidence θ via cos θ = c * g.
+            # g = dt/ds (s per meter). Convert to incidence via |cos δ| = |c*g|.
+            # Use ABS to keep δ in [0, 90] so bearings are around the AXIS, not the NORMAL.
             cg = speed_of_sound * g
-            cg = float(clamp(np.array([cg]), -1.0, 1.0)[0])
-            theta = math.degrees(math.acos(cg))
+            cg_abs = float(min(1.0, max(0.0, abs(cg))))
+            theta = math.degrees(math.acos(cg_abs))  # δ in [0, 90]
 
-            # Two ambiguous bearings about the axis
+            # Two ambiguous bearings about the axis (head-tail ambiguity only)
             beta_minus = wrap_bearing_deg(alpha - theta)
-            beta_plus = wrap_bearing_deg(alpha + theta)
+            beta_plus  = wrap_bearing_deg(alpha + theta)
+
 
             results[c][k] = {
                 "bearing_deg_pair": (beta_minus, beta_plus),
@@ -378,6 +380,214 @@ def estimate_bearings_for_packets(
             }
 
     return results
+'''
+def estimate_bearings_for_packets(
+    arrivals: Mapping[int, Mapping[int, int]],
+    subarrays: Mapping[int, Sequence[int]],
+    gps_per_channel: np.ndarray,
+    packet_indices: Iterable[int],
+    run_number: int,
+    speed_of_sound: float = 1500.0,
+    min_fraction_present: float = 0.5,
+    use_pca_heading: bool = False,
+    debug: bool = True,
+    *,
+    time_gate_s: Optional[float] = None,   # e.g. 1.5 -> keep arrivals within ±1.5 s of subarray median
+    use_linear_spacing: bool = False       # True -> use ideal spacing (index * channel_distance) instead of GPS projection
+) -> Dict[int, Dict[int, Optional[Dict[str, Union[float, int, Tuple[float, float]]]]]]:
+    """
+    Estimate bearings per subarray and packet via TDOA slope.
+
+    Bearing convention: degrees from North, clockwise (0°=North, 90°=East).
+    Lat/lon are always handled as (lat, lon).
+
+    New options:
+      - time_gate_s: reject per-subarray arrivals whose time differs from the
+        subarray median by more than ±time_gate_s (helps avoid mis-associated packets).
+      - use_linear_spacing: use ideal along-array spacing from channel indices
+        and run["channel_distance"] instead of GPS-projected positions.
+    """
+    # ---- quick global checks ----
+    if debug:
+        print("\n[DEBUG] estimate_bearings_for_packets() — global checks")
+        print(f"  speed_of_sound       = {speed_of_sound} m/s")
+        print(f"  min_fraction_present = {min_fraction_present}")
+        print(f"  use_pca_heading      = {use_pca_heading}")
+        print(f"  time_gate_s          = {time_gate_s}")
+        print(f"  use_linear_spacing   = {use_linear_spacing}")
+        print(f"  gps_per_channel shape: {getattr(gps_per_channel, 'shape', None)} (expected (N,3) as (lat, lon, alt))")
+        pk_list = list(packet_indices) if not isinstance(packet_indices, range) else [packet_indices.start]
+        print(f"  packet_indices       = {pk_list[:10]}{'...' if len(pk_list)>10 else ''}")
+        try:
+            ex_idx = [0, 1] if gps_per_channel.shape[0] > 1 else [0]
+            for ii in ex_idx:
+                lat_i, lon_i = gps_per_channel[ii, 0], gps_per_channel[ii, 1]
+                print(f"    ch {ii:4d}: lat={lat_i:.6f}, lon={lon_i:.6f}")
+        except Exception as e:
+            print(f"  [WARN] Cannot preview gps_per_channel: {e}")
+
+    run = get_run("2024-05-03", run_number)
+    ch_dist = float(run["channel_distance"])
+
+    # reference for local projection: overall mean of all subarray centers
+    centers_meta = subarray_centers_and_headings(subarrays, gps_per_channel)
+    if len(centers_meta) == 0:
+        if debug:
+            print("  [DEBUG] No subarrays provided; returning empty dict.")
+        return {}
+
+    ref_lat = float(np.mean([m["center_lat"] for m in centers_meta.values()]))
+    ref_lon = float(np.mean([m["center_lon"] for m in centers_meta.values()]))
+
+    if debug:
+        print(f"  ENU reference: ref_lat={ref_lat:.6f}, ref_lon={ref_lon:.6f}")
+
+    results: Dict[int, Dict[int, Optional[Dict[str, Union[float, int, Tuple[float, float]]]]]] = {}
+
+    # ---- per-subarray loop ----
+    for c, chans in subarrays.items():
+        if debug:
+            print(f"\n[DEBUG] Subarray center={c}, size={len(chans)}")
+            print(f"  channels: {chans}")
+
+        # subarray heading
+        if use_pca_heading:
+            # PCA-based heading
+            lats = gps_per_channel[np.array(chans), 0]
+            lons = gps_per_channel[np.array(chans), 1]
+            xs, ys = _local_xy_m(lats, lons, ref_lat, ref_lon)
+            alpha = _principal_axis_angle_deg(xs, ys)
+            if debug:
+                print(f"  heading (PCA) alpha={alpha:.3f}° (deg from North CW)")
+        else:
+            # endpoint-based heading from first->last element (lat,lon)
+            ch_first, ch_last = chans[0], chans[-1]
+            p1 = (float(gps_per_channel[ch_first, 0]), float(gps_per_channel[ch_first, 1]))  # (lat, lon)
+            p2 = (float(gps_per_channel[ch_last, 0]),  float(gps_per_channel[ch_last, 1]))   # (lat, lon)
+            alpha = _bearing_deg_from_two_gps(p1, p2)
+            if debug:
+                print(f"  endpoint heading alpha={alpha:.3f}° from ch {ch_first} -> {ch_last}")
+                print(f"    p1(lat,lon)={p1}, p2(lat,lon)={p2}")
+                xs_full, ys_full = _local_xy_m(
+                    np.array([p1[0], p2[0]]), np.array([p1[1], p2[1]]), ref_lat, ref_lon
+                )
+                dx, dy = xs_full[1] - xs_full[0], ys_full[1] - ys_full[0]
+                axis_bearing_from_ENU = wrap_bearing_deg(math.degrees(math.atan2(dx, dy)))
+                print(f"    ENU delta approx: dx={dx:.2f} m (east), dy={dy:.2f} m (north) -> bearing_ENU={axis_bearing_from_ENU:.3f}°")
+                if abs(((axis_bearing_from_ENU - alpha + 180) % 360) - 180) > 5:
+                    print("    [WARN] ENU-based bearing and geodetic bearing differ by >5°. Check lat/lon order or reference.")
+
+        center_lat = float(centers_meta[c]["center_lat"])
+        center_lon = float(centers_meta[c]["center_lon"])
+
+        # Along-axis coordinate s for each channel
+        if use_linear_spacing:
+            # Ideal evenly spaced coordinates centred at zero (in meters)
+            idx = np.arange(len(chans)) - (len(chans) - 1) / 2.0
+            s_axis = idx * ch_dist
+            if debug:
+                print(f"  s_axis (LINEAR) range: [{np.min(s_axis):.2f}, {np.max(s_axis):.2f}] m")
+        else:
+            # GPS-projected coordinates along alpha
+            lats = gps_per_channel[np.array(chans), 0]
+            lons = gps_per_channel[np.array(chans), 1]
+            xs, ys = _local_xy_m(lats, lons, ref_lat, ref_lon)
+            s_axis = _project_onto_axis(xs, ys, alpha)  # meters along axis
+            if debug:
+                print(f"  s_axis (GPS) range: [{np.min(s_axis):.2f}, {np.max(s_axis):.2f}] m")
+                if len(s_axis) >= 3:
+                    ds = np.diff(s_axis)
+                    frac_pos = np.mean(ds > 0)
+                    frac_neg = np.mean(ds < 0)
+                    print(f"  s_axis monotonicity hint: frac_pos={frac_pos:.2f}, frac_neg={frac_neg:.2f}")
+
+        # Packet loop
+        results[c] = {}
+        sub_size = len(chans)
+        min_required = int(math.ceil(min_fraction_present * sub_size))
+
+        for k in packet_indices:
+            # Gather arrivals
+            times = []
+            ss = []
+            present_channels = 0
+            for idx, ch in enumerate(chans):
+                t_samp = arrivals.get(ch, {}).get(k, None)
+                if t_samp is None:
+                    continue
+                present_channels += 1
+                times.append(t_samp / SAMPLE_RATE)   # seconds
+                ss.append(s_axis[idx])
+
+            if debug:
+                print(f"    packet {k}: detections {present_channels}/{sub_size} (need >= {min_required})")
+
+            if present_channels < min_required:
+                results[c][k] = None
+                if debug:
+                    print("      -> insufficient detections, skipping")
+                continue
+
+            t = np.asarray(times, float)
+            s = np.asarray(ss, float)
+
+            # --- Time gating to remove mis-associated channels (optional) ---
+            if time_gate_s is not None and t.size >= 3:
+                t_med = float(np.median(t))
+                keep = np.abs(t - t_med) <= float(time_gate_s)
+                if debug:
+                    n_kept = int(np.sum(keep))
+                    print(f"      time-gate ±{time_gate_s:.2f}s: kept {n_kept}/{t.size}")
+                t = t[keep]
+                s = s[keep]
+                if t.size < min_required:
+                    results[c][k] = None
+                    if debug:
+                        print("      -> after time-gating, too few points; skipping")
+                    continue
+
+            # Fit t(s) with simple outlier rejection
+            a, g, mask = _linear_fit_with_outlier_reject(s, t, max_z=3.5)
+            n_used = int(np.isfinite(mask).sum() if mask.dtype == bool else len(t))
+
+            if debug:
+                corr = np.corrcoef(s, t)[0, 1] if len(s) >= 2 else float("nan")
+                print(f"      fit: g={g:.6g} s/m, intercept a={a:.6g}, used={n_used}, corr(s,t)≈{corr:.3f}")
+
+            if not np.isfinite(g):
+                results[c][k] = None
+                if debug:
+                    print("      -> invalid slope g, skipping")
+                continue
+
+            # g = dt/ds (s/m). Convert to incidence via |cos θ| = |c*g|.
+            cg = speed_of_sound * g
+            cg_abs = float(min(1.0, max(0.0, abs(cg))))
+            theta = math.degrees(math.acos(cg_abs))  # θ ∈ [0,90]
+            if debug:
+                print(f"      c*g={cg:.6g} (abs={cg_abs:.6g}) => theta={theta:.3f}°")
+                if abs(cg) > 1.0 + 1e-3:
+                    print("      [WARN] |c*g| > 1 ⇒ unphysical slope. Check detections / geometry / c.")
+
+            # Two ambiguous bearings about the axis (head-tail ambiguity only)
+            beta_minus = wrap_bearing_deg(alpha - theta - 90)
+            beta_plus  = wrap_bearing_deg(alpha + theta + 90)
+
+            if debug:
+                print(f"      alpha={alpha:.3f}°, bearings: alpha-θ={beta_minus:.3f}°, alpha+θ={beta_plus:.3f}°")
+
+            results[c][k] = {
+                "bearing_deg_pair": (beta_minus, beta_plus),
+                "alpha_deg": float(alpha),
+                "theta_deg": float(theta),
+                "g_s_per_m": float(g),
+                "n_used": int(n_used),
+                "center_lat": center_lat,
+                "center_lon": center_lon,
+            }
+
+    return results
+
 
 
 
