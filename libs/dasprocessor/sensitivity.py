@@ -403,7 +403,7 @@ def main():
 
         distdata = np.load(_OWN_DIR
                            + "/../resources/"
-                           f"{rundict["source_position_file"]}")
+                           f"{rundict['source_position_file']}")
         dftdata = [np.load(_OWN_DIR
                            + f"/../resources/{band}/dfts-{it}-{it+12}-"
                            f"run{run_no}"

@@ -2,6 +2,8 @@
 
 import numpy as np
 from scipy.signal import correlate, find_peaks
+from pathlib import Path
+import os
 
 from .saveandload import load_builtin_detection_signal, save_peaks
 
@@ -143,22 +145,30 @@ def main():
 
     from .saveandload import load_interrogator_data, save_peaks, load_peaks
     from .constants import get_run, frequency_bands, get_trial_day_metadata
-    choicerun = int(argv[1]) if len(argv) > 1 else 1
+    choicerun = int(argv[1]) if len(argv) > 1 else 2
     band = argv[2] if len(argv) > 2 else "B_4"
     myrun = deepcopy(get_run("2024-05-03", choicerun))
+
+    #shorten time range for testing
+    #start_h, start_m, start_s = myrun["time_range"][0]
+    #myrun["time_range"] = (
+    #    (start_h, start_m, start_s),
+    #    (start_h, start_m + 3, start_s)  # +3 minutes
+    #)
+    #print("Using time_range:", myrun["time_range"])
     meta = get_trial_day_metadata("2024-05-03")
     myrun["offset_in_samples"] += meta["signal_starting_points"][
         meta["signal_sequence"].index(band)]
-    for it in range(300, 420, 12):
+    #for it in range(300, 312, 12):
+    for it in [364]: 
         wantedchans = slice(it, it+12)
         mydata = load_interrogator_data(
-                "/home/emil/Dokument/Data/DASOneWay/DasKabel/rawdata/DASComms_"
-                "25kHz_GL_2m/20240503/dphi",
+                r"D:\DASComms_25kHz_GL_2m\20240503\dphi",
                 *myrun["time_range"],
                 on_fnf="cache",
                 channels=wantedchans,
                 filter_band=frequency_bands[band],
-                cachepath="/home/emil/Dokument/Data/DASOneWay/DasKabel/backups",
+                cachepath=r"D:\backups",
                 out="npz",
                 verbose=True)
         # distance is 20 seconds times 25000 samples per second
@@ -167,16 +177,24 @@ def main():
                                                     f"preamble-{band}", 25000),
                                             wantedchans.start,
                                             {
-                                                "distance": 500000,
-                                                "height": 0.01
+                                                "distance": 500000,  #emil set to 500000
+                                                "height": 0.01/2    #I halfed emils value to see if i get more peaks
+                                                #"prominence": 0.002   #I added prominence
                                             },
                                             myrun,
                                             2500)
-        savepath = f"/../resources/{band}/peaks-{wantedchans.start}-{wantedchans.stop}-"\
-                   f"run{choicerun}.json"
+        savepath = Path(__file__).resolve().parent / f"../resources/{band}/peaks-{wantedchans.start}-{wantedchans.stop}-run{choicerun}.json"
+        savepath = savepath.resolve()
+        os.makedirs(savepath.parent, exist_ok=True)
         save_peaks(savepath, mypeaks)
-        print(it)
+        print(f"✅ Saved: {savepath}")
 
 
 if __name__ == "__main__":
     main()
+
+
+
+
+
+
