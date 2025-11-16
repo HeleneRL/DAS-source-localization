@@ -18,7 +18,6 @@ from dasprocessor.plot.source_track import load_source_points_for_run
 
 from dasprocessor.channel_gps import compute_channel_positions
 from dasprocessor.constants import get_run
-from dasprocessor.doa import compute_doa_for_packet_groups
 
 
 def center_for_gps_or_run(gps: dict, run_number: int, date_str="2024-05-03"):
@@ -40,11 +39,20 @@ def main():
     run_number = 2
     geojson_path = Path(r"C:\Users\helen\Documents\PythonProjects\my-project\libs\resources\cable-layout.json")
     csv_path = Path(r"C:\Users\helen\Documents\PythonProjects\my-project\libs\resources\source-position.csv")
-    centers = [119, 122, 125, 128, 203, 206, 209, 212, 263, 266, 269, 272, 347, 350, 353, 356]
-    aperture_len = 15
-    # Clear GPS cache to ensure fresh load
+
+
+    path_list = [
+    Path(r"C:\Users\helen\Documents\PythonProjects\my-project\libs\resources\B_4\DOA_results-75-105.json"),
+    Path(r"C:\Users\helen\Documents\PythonProjects\my-project\libs\resources\B_4\DOA_results-100-130.json"),
+    Path(r"C:\Users\helen\Documents\PythonProjects\my-project\libs\resources\B_4\DOA_results-150-180.json"),
+    Path(r"C:\Users\helen\Documents\PythonProjects\my-project\libs\resources\B_4\DOA_results-180-210.json"),
+    Path(r"C:\Users\helen\Documents\PythonProjects\my-project\libs\resources\B_4\DOA_results-220-250.json"),
+    Path(r"C:\Users\helen\Documents\PythonProjects\my-project\libs\resources\B_4\DOA_results-245-275.json"),
+    Path(r"C:\Users\helen\Documents\PythonProjects\my-project\libs\resources\B_4\DOA_results-328-358.json"),
+]
 
     channel_pos_geo = compute_channel_positions(geojson_path, channel_count=1200, channel_distance=1.02)
+
 
     filename = r"C:\Users\helen\Documents\PythonProjects\my-project\libs\resources\B_4\channel_pos_geo.json"
 
@@ -58,20 +66,11 @@ def main():
     with open(r"C:\Users\helen\Documents\PythonProjects\my-project\libs\resources\B_4\consecutive_peaks_v2.json", 'r') as file:
         consecutive_channel_dict = json.load(file)
 
-    doa_info = compute_doa_for_packet_groups(
-        packet_groups=consecutive_channel_dict,
-        channel_geo=channel_pos_geo,
-        desired_packet="80",
-        max_channel_number=20,
-        speed_of_sound=1475.0,
-        reference_strategy="first"
-    )
-
     m = folium.Map(location=[lat0, lon0], zoom_start=15, tiles="OpenStreetMap")
 
     # Cable, channels, subarrays
-    add_cable_layout_layer(m, geojson_path, name="Cable layout", color="#111111", marker_every=25)
-    add_channel_positions_layer(m, channel_pos_geo, name="Channels", color="#cc3300", draw_every=5)
+    add_cable_layout_layer(m, geojson_path, name="Cable layout", color="#07035E", marker_every=25)
+    add_channel_positions_layer(m, channel_pos_geo, name="Channels", color="#0A047D", draw_every=5)
     #add_subarray_centers_layer(m, centers, aperture_len, run_number, name="Subarrays", color="#1f77b4")
     
     # ✅ Boat track (expects 3-tuples: lat, lon, dt)
@@ -81,8 +80,25 @@ def main():
     # ✅ TX positions
     build_transmission_points_layer(csv_path, run_number, label_every=10, name="TX positions").add_to(m)
 
-    # ✅ DOA rays
-    doa_layer = build_doa_layer_from_results(doa_info["80"], name="DOA rays (packet 80)", line_length_m=400, direction="away", color="#00aa88", weight=3,).add_to(m)
+    packets = 50  # only show DOA for this packet (set to None for all)
+
+    for el in path_list:
+        print(f"Processing array DOA results from {el}")
+        print(type(el))
+        if el.exists():
+            with el.open("r") as f:
+                doa_results_small = json.load(f)
+
+            # All packets:
+            build_doa_layer_from_results(m, doa_results_small, name=f"DOA {el.stem[12:-1]}", packet_filter=packets).add_to(m)
+        else:
+            print(f"No DOA results file found at {el}")
+
+   
+
+    
+    
+    
 
 
     folium.LayerControl().add_to(m)
@@ -93,3 +109,9 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+
+    
+
+    

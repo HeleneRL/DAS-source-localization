@@ -103,7 +103,7 @@ def add_channel_positions_layer(
     m: folium.Map,
     gps: dict,
     name: str = "Channel GPS (interp)",
-    color: str = "#cc3300",
+    color: str = "#15b9e2",
     show: bool = True,
     draw_every: int = 5,
     label_every: int = 0,
@@ -235,58 +235,145 @@ __all__ = [
 # ---------------------------------------------------------------------------
 
 
-from dasprocessor.enu_geodetic import enu_offset_to_geodetic
 
+
+import folium
+import numpy as np
+from typing import Iterable, Optional, Union
+
+
+
+from pymap3d import enu2geodetic, geodetic2enu
+
+
+def _get_field(obj, name, default=None):
+    """Helper: support both dicts and dataclass-like objects."""
+    if isinstance(obj, dict):
+        return obj.get(name, default)
+    return getattr(obj, name, default)
 
 def build_doa_layer_from_results(
-    doa_packet_dict: Dict[int, Dict[str, Any]],
-    name: str = "DOA rays",
-    line_length_m: float = 10_000.0,
-    direction: str = "away",      # "toward" the source (-u) or "away" (+u)
-    color: str = "#00aa88",
-    weight: int = 3,
+    fmap: folium.Map,
+    doa_results: Iterable,
+    name: str = "DOA estimates",
+    packet_filter: Optional[Union[int, Iterable[int]]] = None,
+    ray_length_m: float = 300.0,
+    color_A: str = "#fefefe",  # blue-ish
+    color_B: str = "#d70d0d",  # green-ish
 ) -> folium.FeatureGroup:
     """
-    Build a Folium layer with 2D DOA rays for a single packet.
-    Input is the per-packet dict, i.e. out[desired_packet] from your DOA solver.
+    Build a folium layer with DOA rays for one, many, or all packets.
 
-    Draws a straight geodesic great-circle segment between the ENU origin and
-    the end point corresponding to the horizontal projection of the unit vector.
+    Parameters
+    ----------
+    fmap : folium.Map
+        Existing folium map to attach CRS / bounds context.
+        (Not strictly required for geometry, but kept for symmetry with other helpers.)
+    doa_results : Iterable
+        List of DOA result dicts or DoaResult dataclass instances.
+        Each entry must contain at least:
+          - packet (int)
+          - center_lat (float)
+          - center_lon (float)
+          - dir_A_enu (Sequence[float])  # [E, N, U]
+          - dir_B_enu (Sequence[float])
+          - channels_min (int)
+          - channels_max (int)
+          - n_channels (int)
+    name : str
+        Layer name for the folium LayerControl.
+    packet_filter : None | int | Iterable[int]
+        - None  -> include all packets
+        - int   -> include only that packet
+        - iterable of ints -> include only packets in that collection
+    ray_length_m : float
+        Length of the DOA rays in meters (projected from center in ENU).
+    color_A, color_B : str
+        Colors for DOA A and DOA B rays.
+
+    Returns
+    -------
+    folium.FeatureGroup
+        The feature group containing all DOA markers/lines.
     """
     fg = folium.FeatureGroup(name=name, show=True)
 
-    for startch, subset in doa_packet_dict.items():
-        doa = subset.get("doa_relative_to_array")
-        if not doa or "u_enu" not in doa or "enu_origin" not in doa:
+    # Normalize packet_filter
+    if packet_filter is None:
+        def use_packet(_): return True
+    elif isinstance(packet_filter, int):
+        def use_packet(p): return p == packet_filter
+    else:
+        packet_set = set(packet_filter)
+        def use_packet(p): return p in packet_set
+
+    for res in doa_results:
+        packet = _get_field(res, "packet")
+        if packet is None or not use_packet(packet):
             continue
 
-        u = np.array(doa["u_enu"], float)
-        if direction == "toward":
-            u = -u
+        center_lat = _get_field(res, "center_lat")
+        center_lon = _get_field(res, "center_lon")
+        dir_A = np.asarray(_get_field(res, "dir_A_enu"), dtype=float)
+        dir_B = np.asarray(_get_field(res, "dir_B_enu"), dtype=float)
 
-        # 2D ground-track: discard Up, renormalize horizontal part
-        u[2] = 0.0
-        hnorm = np.linalg.norm(u[:2])
-        if hnorm < 1e-12:
-            # near-vertical, skip
+        channels_min = _get_field(res, "channels_min")
+        channels_max = _get_field(res, "channels_max")
+        n_channels = _get_field(res, "n_channels")
+
+        if center_lat is None or center_lon is None:
+            # Skip malformed entries
             continue
-        u /= hnorm
 
-        origin_geo = (
-            float(doa["enu_origin"]["lat_deg"]),
-            float(doa["enu_origin"]["lon_deg"]),
-            float(doa["enu_origin"]["alt_m"]),
-        )
-        end_enu = u * float(line_length_m)
-        end_geo = enu_offset_to_geodetic(end_enu, origin_geo)
+        # ENU offsets for endpoints (center is at ENU origin here)
+        end_A_enu = ray_length_m * dir_A
+        end_B_enu = ray_length_m * dir_B
 
-        coords = [(origin_geo[0], origin_geo[1]), (end_geo[0], end_geo[1])]  # (lat, lon)
-        tooltip = (
-            f"startch {startch} • az={doa.get('az_deg', float('nan')):.1f}° "
-            f"• el={doa.get('el_deg', float('nan')):.1f}° "
-            f"• rms={doa.get('residual_rms_s', float('nan')):.4f}s"
+        # Convert ENU back to geodetic (lat, lon, alt). Assume alt = 0 at center.
+        lat_A, lon_A, _ = enu2geodetic(
+            end_A_enu[0], end_A_enu[1], 0,
+            center_lat, center_lon, 0.0
         )
-        folium.PolyLine(coords, color=color, weight=weight, tooltip=tooltip).add_to(fg)
-        folium.CircleMarker(coords[0], radius=3, color=color, fill=True, fill_opacity=1.0).add_to(fg)
+        lat_B, lon_B, _ = enu2geodetic(
+            end_B_enu[0], end_B_enu[1], 0,
+            center_lat, center_lon, 0.0
+        )
+
+        # Popup text with packet and channel info
+        common_info = (
+            f"Packet: {packet}<br>"
+            f"Channels: {channels_min}–{channels_max} (n={n_channels})"
+        )
+
+        # --- Ray A ---
+        folium.PolyLine(
+            locations=[(center_lat, center_lon), (lat_A, lon_A)],
+            color=color_A,
+            weight=3,
+            opacity=0.9,
+            tooltip=f"DOA A (packet {packet})",
+            popup=folium.Popup(common_info + "<br>Ray: A", max_width=250),
+        ).add_to(fg)
+
+        # --- Ray B ---
+        folium.PolyLine(
+            locations=[(center_lat, center_lon), (lat_B, lon_B)],
+            color=color_B,
+            weight=3,
+            opacity=0.9,
+            tooltip=f"DOA B (packet {packet})",
+            popup=folium.Popup(common_info + "<br>Ray: B", max_width=250),
+        ).add_to(fg)
+
+        # Optional: small marker at the center
+        folium.CircleMarker(
+            location=(center_lat, center_lon),
+            radius=3,
+            color="#000000",
+            fill=True,
+            fill_opacity=0.8,
+            tooltip=f"DOA center (packet {packet})",
+        ).add_to(fg)
 
     return fg
+

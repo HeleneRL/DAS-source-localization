@@ -167,7 +167,7 @@ def build_transmission_points_layer(
         folium.CircleMarker(
             location=[lat, lon],
             radius=3,
-            color="#0033cc",
+            color="#e47e11",
             fill=True,
             fill_opacity=0.9,
             tooltip=f"Packet {idx} @ {dt}",
@@ -185,7 +185,7 @@ def build_transmission_points_layer(
 
     # Optional: polyline through the 128 points (thin)
     if len(coords_line) >= 2:
-        folium.PolyLine(coords_line, color="#0033cc", weight=2, opacity=0.6).add_to(layer)
+        folium.PolyLine(coords_line, color="#e47e11", weight=2, opacity=0.6).add_to(layer)
 
     return layer
 

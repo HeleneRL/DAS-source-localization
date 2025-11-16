@@ -41,17 +41,21 @@ def matched_filter_detector(rx, preamble, peak_properties={},
                         f' but it is {rx.ndim}-D')
 
     out = []
+    envs = []
     # loop for better memory usage
     for it in range(rx.shape[-1]):
         xc = correlate(rx[:, it], preamble, 'valid')
         if get_output_instead:
             out.append(xc)
         else:
-            xc /= np.max(np.abs(xc))
-            out.append(find_peaks(np.sqrt(xc**2), **peak_properties))
+            #xc /= np.max(np.abs(xc))
+            env  = np.abs(hilbert(xc))          # amplitude envelope
+            env /= env.max() or 1.0
+            envs.append(env)
+            out.append(find_peaks(env, **peak_properties))
+            #out.append(find_peaks(np.sqrt(xc**2), **peak_properties))
     
-    return np.column_stack(out) if get_output_instead else tuple(out)
-
+    return np.column_stack(out) if get_output_instead else tuple(out), envs
 
 def map_peaks_to_packets(peaks, start, run_data=None, tol=None):
     """Determine which peaks belong to which packet.
@@ -91,6 +95,7 @@ def map_peaks_to_packets(peaks, start, run_data=None, tol=None):
 
     pmap = {x: None for x in range(start, start+len(peaks))}
     target = np.arange(max_packets)*med_diff + med_first
+
     #big Helene tweak, changed the loop structure, see original file for reference
     for it in range(len(peaks)): 
          # For each packet index c, find the earliest peak row r within tol
@@ -134,8 +139,9 @@ def get_packet_sample_indexes(rx, preamble, start, peak_properties={},
         * :py:func:`map_peaks_to_packets`
 
     """
-    detector_hits = matched_filter_detector(rx, preamble, peak_properties)
+    detector_hits, envs = matched_filter_detector(rx, preamble, peak_properties)
     packets_found = map_peaks_to_packets(detector_hits, start, run_data, tol)
+
     # TODO get dict on form {channel: {pk1: idx1, pk2: idx2, ..., pkN: idxN}}
     out = {}
     for it in range(start, start+len(detector_hits)): #Helene tweak, see original file for reference
@@ -149,6 +155,7 @@ def get_packet_sample_indexes(rx, preamble, start, peak_properties={},
 
 
 def main():
+    print("=== DAS packet detection demo ===")
     """Demonstrate that the module can detect JANUS packets.
 
     Testing purposes only.
@@ -174,7 +181,7 @@ def main():
     myrun["offset_in_samples"] += meta["signal_starting_points"][
         meta["signal_sequence"].index(band)]
     #for it in range(300, 312, 12):
-    for it in [148]: 
+    for it in [76]: 
         wantedchans = slice(it, it+12)
         mydata = load_interrogator_data(
                 r"D:\DASComms_25kHz_GL_2m\20240503\dphi",
@@ -218,20 +225,21 @@ def main():
 
         # # --- end plotting ---          
 
-
+        print(f"Detecting packets in channels {wantedchans.start} to {wantedchans.stop-1}...")
 
         mypeaks = get_packet_sample_indexes(mydata['y'],
                                             load_builtin_detection_signal(
                                                     f"preamble-{band}", 25000),
                                             wantedchans.start,
                                             {
-                                                "prominence": 0.3, #I added prominence
-                                                "height": 0.15, 
-                                                "distance": 500000 #back to what it was                                              
-                                                   
+                                                "prominence": 0.025, #I added prominence
+                                                "height": 0.05, 
+                                                "distance": 500000                                    
+                                        
                                             },
                                             myrun,
                                             5000) #tolerance in samples, 500m/1475m/s*25000sps ≈ 8475 samples
+        print(f"Detected peaks map for channels {wantedchans.start} to {wantedchans.stop-1}:")
         
         savepath = Path(__file__).resolve().parent / f"../resources/{band}/peaks-{wantedchans.start}-{wantedchans.stop}-run{choicerun}-HeleneTweaks.json"
         savepath = savepath.resolve()
@@ -239,25 +247,67 @@ def main():
         save_peaks(savepath, mypeaks)
         print(f"✅ Saved: {savepath}")
 
-                # choose a channel inside the slice to inspect (e.g., first in the slice)
-        ch_global = wantedchans.start          # e.g., 148
-        ch_local  = ch_global - wantedchans.start  # 0-based within the loaded block
-        selected_map = mypeaks.get(ch_global, {})  # {packet_id: corr_index}
+        # # choose a channel inside the slice to inspect (e.g., first in the slice)
+        # ch_global = wantedchans.start          # e.g., 148
+        # ch_local  = ch_global - wantedchans.start  # 0-based within the loaded block
+        # selected_map = mypeaks.get(ch_global, {})  # {packet_id: corr_index}
 
 
-        # plot
-        plot_channel_corr_with_selected(
-            rx_col=mydata['y'][:, ch_local],
-            preamble=preamble,
-            selected_peaks_map=selected_map,
-            targets=targets_raw,        # already in corr coords
-            tol=5000,                    # same tol you used in mapping
-            fs=int(mydata['fs']),
-            targets_are_raw=False,       # we passed corr targets above
-            zoom_center=None,            # full trace
-            title_prefix=f"ch {ch_global}",
-            annotate=True
-        )
+
+        # # plot
+        # plot_channel_corr_with_selected(
+        #     rx_col=mydata['y'][:, ch_local],
+        #     preamble=preamble,
+        #     selected_peaks_map=selected_map,
+        #     targets=targets_raw,        # already in corr coords
+        #     tol=5000,                    # same tol you used in mapping
+        #     fs=25000,
+        #     targets_are_raw=False,       # we passed corr targets above
+        #     zoom_center=None,            # full trace
+        #     title_prefix=f"ch {ch_global}",
+        #     annotate=True
+        # )
+
+        # plot_channel_corr_with_selected(
+        #     rx_col=mydata['y'][:, ch_local+1],
+        #     preamble=preamble,
+        #     selected_peaks_map=mypeaks.get(ch_global+1, {}),
+        #     targets=targets_raw,        # already in corr coords
+        #     tol=5000,                    # same tol you used in mapping
+        #     fs=25000,
+        #     targets_are_raw=False,       # we passed corr targets above
+        #     zoom_center=None,            # full trace
+        #     title_prefix=f"ch {ch_global+1}",
+        #     annotate=True
+        # )
+
+
+        # plot_channel_corr_with_selected(
+        #     rx_col=mydata['y'][:, ch_local+2],
+        #     preamble=preamble,
+        #     selected_peaks_map=mypeaks.get(ch_global+2, {}),
+        #     targets=targets_raw,        # already in corr coords
+        #     tol=5000,                    # same tol you used in mapping
+        #     fs=25000,
+        #     targets_are_raw=False,       # we passed corr targets above
+        #     zoom_center=None,            # full trace
+        #     title_prefix=f"ch {ch_global+2}",
+        #     annotate=True
+        # )
+
+        
+        # plot_channel_corr_with_selected(
+        #     rx_col=mydata['y'][:, ch_local+8],
+        #     preamble=preamble,
+        #     selected_peaks_map=mypeaks.get(ch_global+8, {}),
+        #     targets=targets_raw,        # already in corr coords
+        #     tol=5000,                    # same tol you used in mapping
+        #     fs=25000,
+        #     targets_are_raw=False,       # we passed corr targets above
+        #     zoom_center=None,            # full trace
+        #     title_prefix=f"ch {ch_global+8}",
+        #     annotate=True
+        # )
 
 
 

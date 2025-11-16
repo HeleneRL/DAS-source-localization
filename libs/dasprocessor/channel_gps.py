@@ -241,11 +241,5 @@ def compute_channel_positions(
         s = max(0.0, min(total_len, chain0 + ch * channel_distance))
         lat, lon, alt = _sample_polyline(lats, lons, alts, cum, s)
         out[ch] = [lat, lon, alt]
-    
-    _check_spacing_block(out, 101)
-    _check_spacing_block(out, 201)
-    _check_spacing_block(out, 301)
-    _check_spacing_block(out, 401)
-    _check_spacing_block(out, 501)
 
     return out

@@ -9,7 +9,7 @@ import numpy as np
 from pandas import DataFrame, read_csv
 from scipy.io import wavfile
 from scipy.io import savemat, loadmat
-from scipy.signal import sosfiltfilt
+from scipy.signal import sosfilt
 
 from .simpleDASreader8 import load_DAS_files
 from .exceptions import NotInCacheError, NoSuchPreambleError
@@ -273,8 +273,8 @@ def load_interrogator_data(basename, start, stop, step=10,
                     bandpass = get_bandpass_filter(*filter_band,
                                                    np.round(data['fs']))
                     print(data['y'].shape)
-                    data['y'] = sosfiltfilt(bandpass, data['y'], axis=0)\
-                        .astype('float32') # Helene tweak, changed the sosfilt to sosfiltfilt
+                    data['y'] = sosfilt(bandpass, data['y'], axis=0)\
+                        .astype('float32')
                     print(f'ok, we got channels {channels}')
                 # cache filtered or raw data to disk
                 if will_cache:
