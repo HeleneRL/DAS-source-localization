@@ -130,7 +130,7 @@ def add_channel_positions_layer(
     color: str = "#15b9e2",
     show: bool = True,
     draw_every: int = 5,
-    label_every: int = 0,
+    label_every: int = 100,
 ) -> folium.FeatureGroup:
     """
     Plot all channel GPS positions as a polyline + optional thinned markers.
@@ -169,7 +169,7 @@ def add_channel_positions_layer(
                     icon_anchor=(0, 0),
                     html=(
                         f'<div style="font-size:10px; color:{color}; '
-                        f'font-weight:bold;">{ch}</div>'
+                        f'font-weight:bold;">ch: {ch}</div>'
                     ),
                 ),
             ).add_to(layer)
@@ -265,7 +265,8 @@ def add_subarray_layer(
     array_length: int,
     channels_gps: dict,
     name: str = "Subarrays",
-    color: str = "#FF5733",
+    color_even: str = "#FF633F",   # color for indices 0,2,4,...
+    color_odd: str = "#B10000",    # color for indices 1,3,5,...
     show: bool = True,
 ) -> folium.FeatureGroup:
     """
@@ -274,10 +275,16 @@ def add_subarray_layer(
     start_channels : list of first-channel indices for each subarray.
     array_length   : number of channels in each subarray.
     channels_gps   : channel index -> [lat, lon, alt].
+
     """
+
+    print("Subarray layer start_channels =", start_channels)  # <--- add this
     layer = folium.FeatureGroup(name=name, show=show)
 
-    for start_ch in start_channels:
+    for idx, start_ch in enumerate(start_channels):
+        # Pick color based on whether this is 0th, 1st, 2nd, 3rd,... element
+        color = color_even if (idx % 2 == 0) else color_odd
+
         channels_in_subarray = [start_ch + i for i in range(array_length)]
 
         for ch in channels_in_subarray:
@@ -291,8 +298,8 @@ def add_subarray_layer(
                 fill=True,
                 fill_opacity=0.9,
                 popup=(
-                    f"Subarray start={start_ch}, length={array_length}, "
-                    f"channel {ch}"
+                    f"Subarray #{idx}  start={start_ch}, length={array_length}, "
+                    f"channel={ch}"
                 ),
             ).add_to(layer)
 

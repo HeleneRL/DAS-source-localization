@@ -176,7 +176,7 @@ def main():
     myrun["offset_in_samples"] += meta["signal_starting_points"][
         meta["signal_sequence"].index(band)]
     #for it in range(300, 312, 12):
-    for it in [16]: 
+    for it in [148]: 
         wantedchans = slice(it, it+12)
         mydata = load_interrogator_data(
                 r"D:\DASComms_25kHz_GL_2m\20240503\dphi",
@@ -249,60 +249,60 @@ def main():
 
 
 
-        # # plot
-        # plot_channel_corr_with_selected(
-        #     rx_col=mydata['y'][:, ch_local],
-        #     preamble=preamble,
-        #     selected_peaks_map=selected_map,
-        #     targets=targets_raw,        # already in corr coords
-        #     tol=5000,                    # same tol you used in mapping
-        #     fs=25000,
-        #     targets_are_raw=False,       # we passed corr targets above
-        #     zoom_center=None,            # full trace
-        #     title_prefix=f"ch {ch_global}",
-        #     annotate=True
-        # )
+        # plot
+        plot_channel_corr_with_selected(
+            rx_col=mydata['y'][:, ch_local],
+            preamble=preamble,
+            selected_peaks_map=selected_map,
+            targets=targets_raw,        # already in corr coords
+            tol=5000,                    # same tol you used in mapping
+            fs=25000,
+            targets_are_raw=False,       # we passed corr targets above
+            zoom_center=None,            # full trace
+            title_prefix=f"ch {ch_global}",
+            annotate=True
+        )
 
-        # plot_channel_corr_with_selected(
-        #     rx_col=mydata['y'][:, ch_local+1],
-        #     preamble=preamble,
-        #     selected_peaks_map=mypeaks.get(ch_global+1, {}),
-        #     targets=targets_raw,        # already in corr coords
-        #     tol=5000,                    # same tol you used in mapping
-        #     fs=25000,
-        #     targets_are_raw=False,       # we passed corr targets above
-        #     zoom_center=None,            # full trace
-        #     title_prefix=f"ch {ch_global+1}",
-        #     annotate=True
-        # )
+        plot_channel_corr_with_selected(
+            rx_col=mydata['y'][:, ch_local+1],
+            preamble=preamble,
+            selected_peaks_map=mypeaks.get(ch_global+1, {}),
+            targets=targets_raw,        # already in corr coords
+            tol=5000,                    # same tol you used in mapping
+            fs=25000,
+            targets_are_raw=False,       # we passed corr targets above
+            zoom_center=None,            # full trace
+            title_prefix=f"ch {ch_global+1}",
+            annotate=True
+        )
 
 
-        # plot_channel_corr_with_selected(
-        #     rx_col=mydata['y'][:, ch_local+2],
-        #     preamble=preamble,
-        #     selected_peaks_map=mypeaks.get(ch_global+2, {}),
-        #     targets=targets_raw,        # already in corr coords
-        #     tol=5000,                    # same tol you used in mapping
-        #     fs=25000,
-        #     targets_are_raw=False,       # we passed corr targets above
-        #     zoom_center=None,            # full trace
-        #     title_prefix=f"ch {ch_global+2}",
-        #     annotate=True
-        # )
+        plot_channel_corr_with_selected(
+            rx_col=mydata['y'][:, ch_local+2],
+            preamble=preamble,
+            selected_peaks_map=mypeaks.get(ch_global+2, {}),
+            targets=targets_raw,        # already in corr coords
+            tol=5000,                    # same tol you used in mapping
+            fs=25000,
+            targets_are_raw=False,       # we passed corr targets above
+            zoom_center=None,            # full trace
+            title_prefix=f"ch {ch_global+2}",
+            annotate=True
+        )
 
         
-        # plot_channel_corr_with_selected(
-        #     rx_col=mydata['y'][:, ch_local+8],
-        #     preamble=preamble,
-        #     selected_peaks_map=mypeaks.get(ch_global+8, {}),
-        #     targets=targets_raw,        # already in corr coords
-        #     tol=5000,                    # same tol you used in mapping
-        #     fs=25000,
-        #     targets_are_raw=False,       # we passed corr targets above
-        #     zoom_center=None,            # full trace
-        #     title_prefix=f"ch {ch_global+8}",
-        #     annotate=True
-        # )
+        plot_channel_corr_with_selected(
+            rx_col=mydata['y'][:, ch_local+8],
+            preamble=preamble,
+            selected_peaks_map=mypeaks.get(ch_global+8, {}),
+            targets=targets_raw,        # already in corr coords
+            tol=5000,                    # same tol you used in mapping
+            fs=25000,
+            targets_are_raw=False,       # we passed corr targets above
+            zoom_center=None,            # full trace
+            title_prefix=f"ch {ch_global+8}",
+            annotate=True
+        )
 
 
 

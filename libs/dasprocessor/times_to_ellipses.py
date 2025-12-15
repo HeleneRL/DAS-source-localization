@@ -3,15 +3,10 @@ import json
 import os
 from pathlib import Path
 from pymap3d import enu2geodetic, geodetic2enu
+import matplotlib.pyplot as plt
 
 import numpy as np
 
-from dasprocessor.plot.map_layers_v2 import enu_reference_from_channels
-from dasprocessor.plot.source_track import (
-    load_source_points_for_run,
-    _tx_datetimes_for_run,
-    _interp_positions_at_times,
-)
 
 # your own helpers
 from dasprocessor.channel_gps import compute_channel_positions
@@ -38,6 +33,130 @@ CABLE_LAYOUT_FILE = (
 PEAKS_FILE = (
     r"C:\Users\helen\Documents\PythonProjects\my-project\libs\resources\B_4\peaks-reordered_all_hilbert_channels.json"
 )
+
+#which channel is the first in the water (0-based index)
+N_SKIP = 23          # 0..22 are on land / not in water
+channel_distance = 1.02
+CHANNEL_OFFSET = N_SKIP * channel_distance  # m
+
+
+DEBUG_PLOTS = False  # choose packet index to visualize, or None to disable
+DEBUG_PACKET_IDX = 0
+
+def debug_plot_doa_stage(
+    positions_enu: np.ndarray,
+    times_sec: np.ndarray,
+    residuals: np.ndarray,
+    model,
+    axis_vec: np.ndarray,
+    packet_idx: int,
+    start_channel: int,
+    stage_label: str,
+    c_sound: float = C_SOUND,
+) -> None:
+    """
+    Debug plot: along-array absolute position vs. arrival time with fitted line.
+
+    positions_enu : (N,3) ENU positions of the *used* channels
+    times_sec     : (N,) arrival times (seconds)
+    residuals     : (N,) residuals from this fit
+    model         : sklearn regressor (LinearRegression or RANSACRegressor)
+    axis_vec      : (3,) array axis returned by fit_doa for this stage
+    packet_idx    : int, which packet we are plotting
+    start_channel : int, subarray start (for title)
+    stage_label   : "stage 1", "stage 2", "final", etc.
+    """
+
+    if positions_enu.size == 0:
+        return
+
+    # Flatten array in vertical (use ENU but set z = 0)
+    pos_flat = positions_enu.copy()
+    pos_flat[:, 2] = 0.0
+
+    # Ensure axis_vec is unit length
+    axis_vec = np.asarray(axis_vec, dtype=float)
+    norm_axis = np.linalg.norm(axis_vec)
+    if norm_axis != 0.0:
+        axis_vec /= norm_axis
+
+    # Absolute along-array coordinate (no centering), then start at 0 m
+    s = pos_flat @ axis_vec           # (N,)
+    s = s - s.min()                   # make first used channel ≈ 0 m
+
+    X_feat = s.reshape(-1, 1)
+
+    # Predict times from the regression model
+    if hasattr(model, "predict"):
+        t_fit = model.predict(X_feat)
+    else:
+        t_fit = model(s)
+    t_fit = np.asarray(t_fit).ravel()
+
+    # Get slope dt/ds for angle annotation
+    if hasattr(model, "estimator_"):  # RANSACRegressor
+        slope = float(model.estimator_.coef_[0])
+        intercept = float(model.estimator_.intercept_)
+    else:                             # plain LinearRegression
+        slope = float(model.coef_[0])
+        intercept = float(model.intercept_)
+
+    # Convert slope to angle w.r.t. array axis
+    axis_dot_n = c_sound * slope
+    axis_dot_n = float(np.clip(axis_dot_n, -1.0, 1.0))
+    angle_deg = float(np.degrees(np.arccos(axis_dot_n)))
+
+    textstr = (
+        f"slope = {slope:.3e} s/m\n"
+        f"angle = ±{angle_deg:.1f}°"
+    )
+
+    # Sort for a nice continuous line
+    order = np.argsort(s)
+    s_sorted = s[order]
+    t_sorted = times_sec[order]
+    t_fit_sorted = t_fit[order]
+
+    # --- Plot ---
+    fig, ax = plt.subplots(figsize=(6, 4))
+
+    ax.scatter(s_sorted, t_sorted, s=30, label="data", color="orange")
+    ax.plot(s_sorted, t_fit_sorted, linewidth=2, label="fit")
+
+    # # Highlight worst residual
+    # if residuals is not None and len(residuals) == len(s):
+    #     worst_idx = int(np.argmax(np.abs(residuals)))
+    #     ax.scatter(s[worst_idx], times_sec[worst_idx],
+    #                s=60, marker="x", label="max residual")
+
+    ax.set_xlabel(f"Along-array position(m), distance from channel {start_channel}")
+    ax.set_ylabel("Arrival time (s)")
+    ax.set_title(
+        f"Arrival times for packet {packet_idx} for subarray with start channel {start_channel}\n"
+        f"{stage_label} fit"
+    )
+    ax.grid(True, alpha=0.3)
+
+    # Put the annotation box in a corner depending on slope sign
+    if slope >= 0:
+        x = 0.98
+        ha = "right"
+    else:
+        x = 0.02
+        ha = "left"
+
+    ax.text(
+        x, 0.02, textstr,
+        transform=ax.transAxes,
+        fontsize=9,
+        verticalalignment="bottom",
+        horizontalalignment=ha,
+        bbox=dict(facecolor="white", alpha=0.8, edgecolor="gray"),
+    )
+
+    ax.legend()
+    plt.tight_layout()
+    plt.show()
 
 
 
@@ -129,6 +248,18 @@ def process_packet(
         # 1st fit
         slope, residuals, model, axis = fit_doa(times_sec, channel_positions_enu)
 
+        if DEBUG_PLOTS and packet_idx == DEBUG_PACKET_IDX:
+            debug_plot_doa_stage(
+                positions_enu=channel_positions_enu,
+                times_sec=times_sec,
+                residuals=residuals,
+                model=model,
+                axis_vec=axis,
+                packet_idx=packet_idx,
+                start_channel=start_channel,
+                stage_label="Stage 1 (all channels with ToA)",
+            )
+
         # first-pass residual mask
         tau_1 = MAX_EXTRA_DIST_1 / C_SOUND
         mask_1 = np.abs(residuals) < tau_1
@@ -142,6 +273,18 @@ def process_packet(
 
         # 2nd fit on inliers
         slope_refit, residuals_refit, model_refit, axis_refit = fit_doa(times_inlier, positions_inlier)
+
+        if DEBUG_PLOTS and  packet_idx == DEBUG_PACKET_IDX:
+            debug_plot_doa_stage(
+                positions_enu=positions_inlier,
+                times_sec=times_inlier,
+                residuals=residuals_refit,
+                model=model_refit,
+                axis_vec=axis_refit,
+                packet_idx=packet_idx,
+                start_channel=start_channel,
+                stage_label="Stage 2 (after 10m cleaning)",
+            )
 
         # second-pass mask
         tau_2 = MAX_EXTRA_DIST_2 / C_SOUND
@@ -158,6 +301,18 @@ def process_packet(
         slope_final, residuals_final, model_final, axis_final = fit_doa(
             times_inlier2, positions_inlier2
         )
+
+        if DEBUG_PLOTS and packet_idx == DEBUG_PACKET_IDX:
+            debug_plot_doa_stage(
+                positions_enu=positions_inlier2,
+                times_sec=times_inlier2,
+                residuals=residuals_final,
+                model=model_final,
+                axis_vec=axis_final,
+                packet_idx=packet_idx,
+                start_channel=start_channel,
+                stage_label="Stage 3 (Final fit after 5 m cleaning)",
+            )
 
     except Exception as exc:
         # Any failure in DOA → mark packet invalid but still record some info
@@ -176,6 +331,7 @@ def process_packet(
             "reason": f"DOA fit failed: {exc!s}",
         }
         return ellipse_entry, info_entry
+    
 
     # ---------------- angle + residual stats ----------------
     cone_angle = cone_radian_from_slope(slope_final, speed=C_SOUND)
@@ -256,12 +412,35 @@ def main() -> None:
     start_channel = args.start_channel
     array_length = args.array_length
 
-    #1) Load geodetic positions (once)
-    geodetic_channel_positions = compute_channel_positions(
+
+
+    # #1) Load geodetic positions (once)
+    # geodetic_channel_positions = compute_channel_positions(
+    #     CABLE_LAYOUT_FILE,
+    #     channel_count=1200,
+    #     channel_distance=1.02,
+    #     origin_offset_m=CHANNEL_OFFSET,
+    # )
+
+        # 1) Compute channel positions in geodetic and (optionally) save them
+    channel_pos_all = compute_channel_positions(
         CABLE_LAYOUT_FILE,
-        channel_count=1200,
-        channel_distance=1.02,
+        channel_count=1200-N_SKIP,
+        channel_distance=1.02
     )
+
+    from typing import Dict, List
+    channel_pos_geo: Dict[int, List[float]] = {}
+
+
+    # place 0–23 at first coordinate (same as wet_positions[0])
+    first_lat, first_lon, first_alt = channel_pos_all[0]
+    for ch in range(N_SKIP + 1):     # 0..23 inclusive
+        channel_pos_geo[ch] = [first_lat, first_lon, first_alt]
+
+    # fill the rest using wet_positions shifted by 23
+    for ch in range(N_SKIP + 1, 1200-N_SKIP):
+        channel_pos_geo[ch] = channel_pos_all[ch - (N_SKIP + 1)]
 
     # channel_position_path = r"C:\Users\helen\Documents\PythonProjects\my-project\libs\resources\B_4\channel_pos_geo_adjusted.json"
 
@@ -291,7 +470,7 @@ def main() -> None:
             pkt_idx,
             start_channel,
             array_length,
-            geodetic_channel_positions,
+            channel_pos_geo,
             packet_arrivals,
         )
         ellipse_dict[str(pkt_idx)] = ellipse_entry

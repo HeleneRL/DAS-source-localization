@@ -19,8 +19,8 @@ cable_out_geojson = r"C:\Users\helen\Documents\PythonProjects\my-project\libs\re
 # ----------------------------------------------------------------------
 # We only re-draw channels in [REORIENT_START_CH, REORIENT_END_CH].
 # Everything below REORIENT_START_CH and above REORIENT_END_CH is kept as-is.
-REORIENT_START_CH = 20
-REORIENT_END_CH   = 300   # inclusive
+REORIENT_START_CH = 1
+REORIENT_END_CH   = 400   # inclusive
 
 
 # ----------------------------------------------------------------------
@@ -68,14 +68,16 @@ def load_segment_orientations(path):
         if not seg.get("success", False):
             continue
 
-        if "theta_cont" in seg:
-            th = seg["theta_cont"]
+
+        if "theta_deg_continuous" in seg:
+            th = seg["theta_deg_continuous"]
         elif "theta_deg_norm" in seg:
             th = seg["theta_deg_norm"]
         elif "theta_deg" in seg:
             th = seg["theta_deg"]
         else:
             continue
+
 
         rmin = seg.get("receiver_min")
         rmax = seg.get("receiver_max")

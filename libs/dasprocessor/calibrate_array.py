@@ -25,19 +25,16 @@ summary_out = r"C:\Users\helen\Documents\PythonProjects\my-project\libs\resource
 # ----------------------------------------------------------------------
 # Each tuple is (min_packet_index, max_packet_index), inclusive.
 speaker_ranges = [
-    (2, 7),
-    (10, 15),
-    (15, 20),
-    (49, 54),
-    (54, 59),
+    (2,7),
+    (49, 59)
 ]
 
 # ----------------------------------------------------------------------
 # USER INPUT: RECEIVER SEGMENT SWEEP
 # ----------------------------------------------------------------------
 
-receiver_start = 20    # first segment start channel
-receiver_stop = 300    # last *start* channel (stop is exclusive in range)
+receiver_start = 70    # first segment start channel
+receiver_stop = 310    # last *start* channel (stop is exclusive in range)
 receiver_step = 20     # e.g. 70–80, 80–90, ...
 
 # ----------------------------------------------------------------------

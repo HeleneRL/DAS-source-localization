@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 import argparse
+from typing import List
 
 import folium
 import numpy as np  # needed by center_for_gps_or_run
@@ -36,11 +37,12 @@ CHANNEL_COUNT = 1200
 CHANNEL_SPACING_M = 1.02
 
 # Subarray config (channels, not meters)
-SUBARRAY_START_CHANNELS = [80, 120, 150, 260]
+#SUBARRAY_START_CHANNELS = [100, 130, 245, 265]
+SUBARRAY_START_CHANNELS = [100, 120, 245, 265]
 SUBARRAY_ARRAY_LENGTH = 30  # number of channels in each subarray
 
 # DOA & ellipse viz config
-PACKET_TO_SHOW_ELLIPSES = 60   # None → don't show ellipses 
+PACKET_TO_SHOW_ELLIPSES =  60   # None → don't show ellipses 
 PACKET_TO_SHOW_TRACK = None   # None → full track
 PACKET_FILTER_FOR_DOA = 50   # None → all packets in DOA JSON
 
@@ -48,6 +50,11 @@ ANGLE_UNCERTAINTY_DEG = 5.0  # just for layer naming / info
 
 # Optional: write channel positions geo JSON for debugging/other tools
 WRITE_CHANNEL_POS_GEO = True
+
+#which channel is the first in the water (0-based index)
+N_SKIP = 23          # 0..22 are on land / not in water
+channel_distance = 1.02
+CHANNEL_OFFSET = -N_SKIP * channel_distance  # m
 
 MAP_CENTER_LAT = 63.4406
 MAP_CENTER_LON = 10.3518
@@ -150,11 +157,25 @@ def main() -> None:
     track_estimate_path = paths["track_estimate"]
 
     # 1) Compute channel positions in geodetic and (optionally) save them
-    channel_pos_geo = compute_channel_positions(
+    channel_pos_all = compute_channel_positions(
         cable_layout_path,
-        channel_count=CHANNEL_COUNT,
-        channel_distance=CHANNEL_SPACING_M,
+        channel_count=CHANNEL_COUNT-N_SKIP,
+        channel_distance=CHANNEL_SPACING_M
     )
+
+    from typing import Dict, List
+    channel_pos_geo: Dict[int, List[float]] = {}
+
+
+    # place 0–23 at first coordinate (same as wet_positions[0])
+    first_lat, first_lon, first_alt = channel_pos_all[0]
+    for ch in range(N_SKIP + 1):     # 0..23 inclusive
+        channel_pos_geo[ch] = [first_lat, first_lon, first_alt]
+
+    # fill the rest using wet_positions shifted by 23
+    for ch in range(N_SKIP + 1, CHANNEL_COUNT-N_SKIP):
+        channel_pos_geo[ch] = channel_pos_all[ch - (N_SKIP + 1)]
+
 
     
     # channel_position_path = r"C:\Users\helen\Documents\PythonProjects\my-project\libs\resources\B_4\channel_pos_geo_adjusted.json"
@@ -180,7 +201,7 @@ def main() -> None:
          # 11) GeoJSON MultiLineString for geojson.io
         # Coordinates: [lon, lat, depth]
         coords = []
-        for ch in range(CHANNEL_COUNT):
+        for ch in range(N_SKIP, CHANNEL_COUNT-N_SKIP):
             lat, lon, depth = channel_pos_geo[ch]
             coords.append([lon, lat, depth])  # depth negative in GeoJSON  
 
@@ -286,14 +307,18 @@ def main() -> None:
     else:
         print(f"[INFO] No track estimate file found at {track_estimate_path}")
 
+
     # 8) Subarray visualization
+
     add_subarray_layer(
         m,
         start_channels=SUBARRAY_START_CHANNELS,
         array_length=SUBARRAY_ARRAY_LENGTH,
-        channels_gps=channel_pos_geo,
-        color="#FB3205",
+        channels_gps=channel_pos_geo
+
     )
+
+
 
 
     # # 9) DOA results layer(s)

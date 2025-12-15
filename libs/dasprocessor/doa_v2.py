@@ -7,7 +7,6 @@ from pymap3d import enu2geodetic, geodetic2enu
 from dasprocessor.debugging import  visualize_doa_fit, depth_correct_timestamp
 from dasprocessor.channel_gps import compute_channel_positions
 import json
-from dasprocessor.delete_check.doa_results_io import DoaResult, append_doa_result
 import os
 
 
@@ -92,102 +91,7 @@ def orthonormal_basis_from_axis(axis):
     e3 = np.cross(axis, e2)
 
     return axis, e2, e3
-'''
 
-def cone_plane_intersection(
-    channel_positions_enu,
-    slope,
-    source_depth,
-    array_axis,
-    angle_uncertainty_deg,
-    speed=1475.0,
-    n_samples=360,
-):
-    """
-    Compute intersection curves between the DOA cone (from a 1D array)
-    and the horizontal plane z = source_depth, assuming a plane wave.
-
-    Returns THREE sets of ENU points:
-    - inner_points:  cone with angle (theta - angle_uncertainty_deg)
-    - nominal_points: cone with angle theta
-    - outer_points:  cone with angle (theta + angle_uncertainty_deg)
-
-    All returned arrays have shape (Mi, 3), where Mi can be 0 if no
-    valid intersection for that cone.
-    """
-
-    channel_positions_enu = np.asarray(channel_positions_enu, dtype=float)
-    array_ref = channel_positions_enu.mean(axis=0)
-
-    # --- Nominal angle between array axis and propagation direction ---
-    theta_nominal = cone_radian_from_slope(slope, speed=speed)  # radians
-    theta_nominal_deg = np.degrees(theta_nominal)
-
-    # --- Inner/outer cone angles in degrees, clipped to [0, 180] ---
-    inner_deg = max(0.0, theta_nominal_deg - angle_uncertainty_deg)
-    outer_deg = min(180.0, theta_nominal_deg + angle_uncertainty_deg)
-
-    theta_inner = np.radians(inner_deg)
-    theta_outer = np.radians(outer_deg)
-
-    # --- Local orthonormal basis: e1 = array_axis ---
-    e1, e2, e3 = orthonormal_basis_from_axis(array_axis)
-
-    # --- Helper: intersect cone with given theta with the depth plane ---
-    def intersect_for_theta(theta_val: float) -> np.ndarray:
-        """
-        Given a cone half-angle theta_val (radians) around e1,
-        intersect with z = source_depth plane and return ENU points.
-        """
-
-        # Sample φ around the cone circle
-        phi = np.linspace(0.0, 2 * np.pi, n_samples, endpoint=False)
-        cos_theta = np.cos(theta_val)
-        sin_theta = np.sin(theta_val)
-
-        cos_phi = np.cos(phi)
-        sin_phi = np.sin(phi)
-
-        # PROPAGATION directions on cone:
-        # n_prop(φ) = cosθ e1 + sinθ (cosφ e2 + sinφ e3)
-        n_prop = (
-            cos_theta * e1[None, :]
-            + sin_theta * (
-                cos_phi[:, None] * e2[None, :] + sin_phi[:, None] * e3[None, :]
-            )
-        )
-
-        # We want directions FROM array TO source → flip sign
-        n_vecs = -n_prop
-
-        dz = source_depth - array_ref[2]
-        n_z = n_vecs[:, 2]
-
-        eps = 1e-8
-        valid = np.abs(n_z) > eps  # avoid directions parallel to plane
-
-        if not np.any(valid):
-            return np.empty((0, 3))
-
-        R = np.empty_like(n_z)
-        R[valid] = dz / n_z[valid]
-
-        # Only keep source positions in front of the array along n_vecs
-        valid = valid & (R > 0)
-
-        if not np.any(valid):
-            return np.empty((0, 3))
-
-        points = array_ref[None, :] + R[valid, None] * n_vecs[valid, :]
-        return points
-
-    # --- Compute intersections for inner, nominal, outer cones ---
-    inner_points   = intersect_for_theta(theta_inner)
-    nominal_points = intersect_for_theta(theta_nominal)
-    outer_points   = intersect_for_theta(theta_outer)
-
-    return inner_points, nominal_points, outer_points
-'''
 def cone_plane_intersection(
     channel_positions_enu,
     slope,
@@ -197,13 +101,11 @@ def cone_plane_intersection(
     speed=1475.0,
     n_samples=360,
     theta_eps_deg=0.5,   # avoid exactly 0 or 180
-    max_range_m=None,    # NEW: max distance from array_ref in meters
-    xy_window=None,      # NEW: (E_min, E_max, N_min, N_max) in ENU
+    max_range_m=None,    
+    xy_window=None,      
 ):
     """
-    Same as before, but now you can limit the returned points by:
-      - max_range_m: distance from array_ref (ENU)
-      - xy_window: (E_min, E_max, N_min, N_max) in ENU
+    Compute intersection curves between the DOA cone (from a 1D array)
     """
 
     channel_positions_enu = np.asarray(channel_positions_enu, dtype=float)
@@ -321,6 +223,395 @@ def cone_plane_intersection(
     outer_points   = intersect_for_theta(theta_outer)
 
     return inner_points, nominal_points, outer_points
+
+
+
+from sklearn.cluster import KMeans
+"""
+
+def fit_doa_multiline(
+    times,
+    channel_positions_enu,
+    n_lines_target=3,
+    min_points_per_line=3,
+    alpha_s=0.2,  # weight of proximity in s (0..1)
+):
+
+    times = np.asarray(times, float)
+    channel_positions_enu = np.asarray(channel_positions_enu, float)
+
+    # --- compute array axis via SVD (same as fit_doa) ---
+    center = channel_positions_enu.mean(axis=0)
+    P = channel_positions_enu - center
+    _, _, Vt = np.linalg.svd(P, full_matrices=False)
+    axis = Vt[0] / np.linalg.norm(Vt[0])
+
+    # make direction consistent
+    if np.dot(axis, channel_positions_enu[-1] - channel_positions_enu[0]) < 0:
+        axis = -axis
+
+    # along-array coordinate s
+    s = channel_positions_enu @ axis
+    s = s - s.min()
+    X = s.reshape(-1, 1)
+    y = times
+    n = len(y)
+
+    # fallback if too few points
+    if n < n_lines_target * min_points_per_line:
+        lr = LinearRegression().fit(X, y)
+        slope = float(lr.coef_[0])
+        intercept = float(lr.intercept_)
+        residuals = y - lr.predict(X)
+
+        class SimpleModel:
+            def __init__(self, a, b):
+                self.coef_ = np.array([a])
+                self.intercept_ = b
+            def predict(self, X_in):
+                X_in = np.asarray(X_in).reshape(-1, 1)
+                return X_in[:, 0] * self.coef_[0] + self.intercept_
+
+        model = SimpleModel(slope, intercept)
+        extra = {
+            "n_lines": 1,
+            "lines": [{"slope": slope, "intercept": intercept, "points": list(range(n))}],
+            "s": s.tolist(),
+            "axis": axis.tolist(),
+        }
+        return slope, residuals, model, extra
+
+    # --- rough global slope m0 for residuals ---
+    lr0 = LinearRegression().fit(X, y)
+    m0 = float(lr0.coef_[0])
+
+    # feature space: proximity + vertical offset
+    s_norm = (s - s.mean()) / (s.std() + 1e-9)
+    residual = y - m0 * s
+    features = np.column_stack([alpha_s * s_norm, residual])
+
+    # choose k = n_lines_target but cap if not enough points
+    max_k = n // min_points_per_line
+    k = min(n_lines_target, max_k)
+    if k < 1:
+        k = 1
+
+    kmeans = KMeans(n_clusters=k, n_init=20, random_state=0)
+    labels = kmeans.fit_predict(features)
+
+    slopes = []
+    intercepts = []
+    lines = []
+
+    for c in range(k):
+        idx = np.where(labels == c)[0]
+        if idx.size == 0:
+            continue
+
+        lr = LinearRegression().fit(X[idx], y[idx])
+        m = float(lr.coef_[0])
+        b = float(lr.intercept_)
+        slopes.append(m)
+        intercepts.append(b)
+        lines.append({"slope": m, "intercept": b, "points": idx.tolist()})
+
+    slopes = np.array(slopes, float)
+    intercepts = np.array(intercepts, float)
+    k_eff = len(lines)
+
+
+
+    if k_eff == 0:
+        # safety fallback: just use global line
+        slope_final = float(lr0.coef_[0])
+        intercept_final = float(lr0.intercept_)
+    else:
+        sizes = np.asarray([len(L["points"]) for L in lines])
+
+        # --- choose slope closest to the MEDIAN slope ---
+        median_slope = float(np.median(slopes))
+
+        # optionally, ignore tiny clusters if you want:
+        # big_enough = sizes >= min_points_per_line
+        # candidate_slopes = slopes[big_enough]
+        # if not np.any(big_enough):
+        #     candidate_slopes = slopes
+        #     big_enough = np.ones_like(sizes, dtype=bool)
+        # median_slope = float(np.median(candidate_slopes))
+
+        # index of cluster whose slope is closest to the median
+        best_idx = int(np.argmin(np.abs(slopes - median_slope)))
+
+        slope_final = float(slopes[best_idx])
+
+        # intercept from that cluster's own points
+        idx_pts = np.array(lines[best_idx]["points"], int)
+        intercept_final = float(np.mean(y[idx_pts] - slope_final * s[idx_pts]))
+
+    # # ---------- NEW PART: pick dominant cluster ----------
+    # sizes = np.asarray([len(L["points"]) for L in lines])
+    # best_idx = int(np.argmax(sizes))     # index of largest cluster
+
+    # slope_final = float(slopes[best_idx])
+
+    # # intercept from that cluster's own points
+    # idx_pts = np.array(lines[best_idx]["points"], int)
+    # intercept_final = float(np.mean(y[idx_pts] - slope_final * s[idx_pts]))
+
+    # ------------------------------------------------------
+
+    class SimpleModel:
+        def __init__(self, a, b):
+            self.coef_ = np.array([a])
+            self.intercept_ = b
+        def predict(self, X_in):
+            X_in = np.asarray(X_in).reshape(-1, 1)
+            return X_in[:, 0] * self.coef_[0] + self.intercept_
+
+    model_final = SimpleModel(slope_final, intercept_final)
+    residuals_final = y - model_final.predict(X)
+
+    extra = {
+        "n_lines": int(k_eff),
+        "lines": lines,
+        "dominant_line_index": best_idx,
+        "s": s.tolist(),
+        "axis": axis.tolist(),
+    }
+
+    return slope_final, residuals_final, model_final, extra
+
+"""
+from sklearn.cluster import KMeans
+from sklearn.linear_model import LinearRegression
+import numpy as np
+from sklearn.cluster import KMeans
+from sklearn.linear_model import LinearRegression
+import numpy as np
+
+
+def fit_doa_multiline(
+    times,
+    channel_positions_enu,
+    n_lines_target=3,
+    min_points_per_line=3,
+    alpha_s=0.2,     # weight of proximity in s (0..1)
+    n_refine_iter=5, # how many residual-based refinement steps
+    sound_speed=1475.0,
+):
+   
+
+
+    times = np.asarray(times, float)
+    channel_positions_enu = np.asarray(channel_positions_enu, float)
+
+    # ---- Compute array axis via SVD (same as fit_doa) ----
+    center = channel_positions_enu.mean(axis=0)
+    P = channel_positions_enu - center
+    _, _, Vt = np.linalg.svd(P, full_matrices=False)
+    axis = Vt[0] / np.linalg.norm(Vt[0])
+
+    # make direction consistent
+    if np.dot(axis, channel_positions_enu[-1] - channel_positions_enu[0]) < 0:
+        axis = -axis
+
+    # ---- Along-array coordinate ----
+    s = channel_positions_enu @ axis
+    s = s - s.min()
+    X = s.reshape(-1, 1)
+    y = times
+    n = len(y)
+
+    slope_max = 1.0 / sound_speed  # physical max |dt/ds|
+
+    # ---- Too few points -> single line ----
+    if n < n_lines_target * min_points_per_line:
+        lr = LinearRegression().fit(X, y)
+        slope = float(lr.coef_[0])
+        intercept = float(lr.intercept_)
+        residuals = y - lr.predict(X)
+
+        class SimpleModel:
+            def __init__(self, a, b):
+                self.coef_ = np.array([a])
+                self.intercept_ = b
+            def predict(self, X_in):
+                X_in = np.asarray(X_in).reshape(-1, 1)
+                return X_in[:, 0] * self.coef_[0] + self.intercept_
+
+        model = SimpleModel(slope, intercept)
+        extra = {
+            "n_lines": 1,
+            "lines": [{"slope": slope, "intercept": intercept, "points": list(range(n))}],
+            "s": s.tolist(),
+            "axis": axis.tolist(),
+        }
+        return slope, residuals, model, extra
+
+    # ==========================================================
+    # Stage 1: ROUGH CLUSTERING
+    # ==========================================================
+    lr0 = LinearRegression().fit(X, y)
+    m0 = float(lr0.coef_[0])
+
+    s_norm = (s - s.mean()) / (s.std() + 1e-9)
+    residual0 = y - m0 * s
+    features = np.column_stack([alpha_s * s_norm, residual0])
+
+    max_k = n // min_points_per_line
+    k = min(n_lines_target, max_k)
+    if k < 1:
+        k = 1
+
+    kmeans = KMeans(n_clusters=k, n_init=20, random_state=0)
+    labels = kmeans.fit_predict(features)
+
+    # ==========================================================
+    # Stage 2: RESIDUAL-BASED REFINEMENT WITH SLOPE SANITY CHECK
+    # ==========================================================
+    for _ in range(n_refine_iter):
+        lines = []
+        slopes = []
+        intercepts = []
+
+        for c in range(k):
+            idx = np.where(labels == c)[0]
+            if idx.size < min_points_per_line:
+                continue
+
+            # initial fit for this cluster
+            lr = LinearRegression().fit(X[idx], y[idx])
+            m = float(lr.coef_[0])
+            b = float(lr.intercept_)
+
+            # ---- physical sanity check ----
+            if abs(m) > slope_max:
+                # Re-fit using central 2–3 points in s for this cluster
+                s_c = s[idx]
+                y_c = y[idx]
+                order_c = np.argsort(s_c)
+                mid = len(order_c) // 2
+                # take 3 central points if possible, else 2
+                start = max(0, mid - 1)
+                end = min(len(order_c), mid + 2)
+                idx_mid = idx[order_c[start:end]]
+
+                if idx_mid.size >= 2:
+                    lr_mid = LinearRegression().fit(
+                        s[idx_mid].reshape(-1, 1), y[idx_mid]
+                    )
+                    m = float(lr_mid.coef_[0])
+                    b = float(lr_mid.intercept_)
+
+                # still unphysical? clamp slope to physical max and
+                # force line through median of cluster
+                if abs(m) > slope_max:
+                    m = np.sign(m) * slope_max * 0.99  # stay just below limit
+                    s_med = float(np.median(s[idx]))
+                    t_med = float(np.median(y[idx]))
+                    b = t_med - m * s_med
+
+            slopes.append(m)
+            intercepts.append(b)
+            lines.append({"slope": m, "intercept": b, "points": idx.tolist()})
+
+        if len(lines) == 0:
+            labels = np.zeros(n, int)
+            break
+
+        slopes = np.array(slopes)
+        intercepts = np.array(intercepts)
+
+        # ---- reassign each point based ONLY on residual to each line ----
+        new_labels = np.zeros(n, int)
+        for i in range(n):
+            res_to_each = [
+                abs(y[i] - (slopes[j] * s[i] + intercepts[j]))
+                for j in range(len(lines))
+            ]
+            new_labels[i] = int(np.argmin(res_to_each))
+
+        if np.array_equal(new_labels, labels):
+            break
+        labels = new_labels
+
+    # ---- Final refit with refined labels ----
+    lines = []
+    slopes = []
+    intercepts = []
+
+    unique_labels = np.unique(labels)
+    for c in unique_labels:
+        idx = np.where(labels == c)[0]
+        if idx.size < 2:
+            continue
+        lr = LinearRegression().fit(X[idx], y[idx])
+        m = float(lr.coef_[0])
+        b = float(lr.intercept_)
+
+        # apply slope clamp again for safety
+        if abs(m) > slope_max:
+            m = np.sign(m) * slope_max * 0.99
+            s_med = float(np.median(s[idx]))
+            t_med = float(np.median(y[idx]))
+            b = t_med - m * s_med
+
+        slopes.append(m)
+        intercepts.append(b)
+        lines.append({"slope": m, "intercept": b, "points": idx.tolist()})
+
+    slopes = np.array(slopes)
+    intercepts = np.array(intercepts)
+
+    # ==========================================================
+    # Stage 3: Choose DOA slope from physically valid slopes
+    # ==========================================================
+    if slopes.size == 0:
+        slope_final = float(lr0.coef_[0])
+        intercept_final = float(lr0.intercept_)
+    else:
+        # keep only physically valid slopes
+        valid = np.abs(slopes) <= slope_max * 1.01
+        if np.any(valid):
+            slopes_valid = slopes[valid]
+            median_slope = float(np.median(slopes_valid))
+            # index among all lines that is closest to this median
+            best_idx = int(np.argmin(np.abs(slopes - median_slope)))
+        else:
+            median_slope = float(np.median(slopes))
+            best_idx = int(np.argmin(np.abs(slopes - median_slope)))
+
+        slope_final = float(slopes[best_idx])
+        idx_pts = np.array(lines[best_idx]["points"], int)
+        intercept_final = float(np.mean(y[idx_pts] - slope_final * s[idx_pts]))
+
+    class SimpleModel:
+        def __init__(self, a, b):
+            self.coef_ = np.array([a])
+            self.intercept_ = b
+        def predict(self, X_in):
+            X_in = np.asarray(X_in).reshape(-1, 1)
+            return X_in[:, 0] * self.coef_[0] + self.intercept_
+
+    model_final = SimpleModel(slope_final, intercept_final)
+    residuals_final = y - model_final.predict(X)
+
+    extra = {
+        "n_lines": len(lines),
+        "lines": lines,
+        "s": s.tolist(),
+        "axis": axis.tolist(),
+    }
+
+    return slope_final, residuals_final, model_final, extra
+
+
+
+
+
+
+
+
 
 
 
@@ -495,138 +786,19 @@ def main() -> None:
 
     
 
-    #center_enu = positions_inlier2[positions_inlier2.shape[0]//2]
-
-    #ellipse_enu = cone_plane_intersection_enu(center_enu, axis_final, bearing_angle, z_source=-30.0)
-
-    # latlon = []
-    # for e, n, u in ellipse_enu:
-    #     lat, lon, _ = enu2geodetic(e, n, u, ref[0], ref[1], ref[2])
-    #     latlon.append([float(lat), float(lon)])
 
 
 
 
 
 
-    # flat_pos = positions_inlier2.copy()
-    # flat_pos[:, 2] = 0.0
-
-    # mid_array_axis = flat_pos[len(flat_pos)//2] - flat_pos[len(flat_pos)//2+1]
-    # mid_array_axis /= np.linalg.norm(mid_array_axis)
-
-    # print(f"Mid array axis: {mid_array_axis}")
-    # direction_1 = np.cos(bearing_angle)*mid_array_axis + np.sin(bearing_angle)*np.cross(np.array([0,0,1]), mid_array_axis)
-    # direction_2 = np.cos(bearing_angle)*mid_array_axis - np.sin(bearing_angle)*np.cross(np.array([0,0,1]), mid_array_axis)
-    # direction_source_A = direction_1/np.linalg.norm(direction_1)
-    # direction_source_B = direction_2/np.linalg.norm(direction_2)
- 
-
-    # center_lat, center_lon, _ = enu2geodetic(flat_pos[len(flat_pos)//2][0], flat_pos[len(flat_pos)//2][1],0, ref[0], ref[1], ref[2])
- 
-
-
-    # doa_result = DoaResult(
-    #     packet=packet_idx,
-    #     center_lat=center_lat,
-    #     center_lon=center_lon,
-    #     dir_A_enu=direction_source_A.tolist(),
-    #     dir_B_enu=direction_source_B.tolist(),
-    #     channels_min=int(min(channels_inlier)),
-    #     channels_max=int(max(channels_inlier)),
-    #     n_channels=len(channels_inlier),
-    #     ellipse_latlon=latlon,
-    # )
-
-    # savepath = Path(__file__).resolve().parent / f"../resources/B_4/DOA_results-{args.start_channel}-{args.start_channel + args.array_length}.json"
-    # savepath = savepath.resolve()
-    # os.makedirs(savepath.parent, exist_ok=True)
-
-
-    # append_doa_result(savepath, doa_result)
-    # print(f"Appended DOA result for packet {packet_idx} to {savepath}")
 
 
 
-  
-    #5. Visualize
-
-    # axis = channel_positions_enu[-1] - channel_positions_enu[0]
-    # axis /= np.linalg.norm(axis)
-
-    # # project each channel position onto the axis
-    # proj = channel_positions_enu @ axis  # 1D coordinate along-array
-
-    # diffs = np.diff(proj)
-    # print("mean spacing along local axis:", np.mean(diffs))
-
-    # plt.figure()
-    # plt.plot(proj, times_sec, 'o-')
-    # plt.xlabel("Along-array coordinate (m)")
-    # plt.ylabel("Arrival time (s)")
-    # plt.title(f"Packet {packet_idx} arrival times vs array position before cleaning")
-    # plt.show()
 
 
-    # axis_1 = positions_inlier2[-1]-positions_inlier2[0]
-    # axis_1 /= np.linalg.norm(axis_1)
-
-    # proj_inlier = positions_inlier @ axis_1
-    # plt.figure()
-    # plt.plot(proj_inlier, times_inlier, 'o-')
-    # plt.xlabel("Along-array coordinate (m)")
-    # plt.ylabel("Arrival time (s)")
-    # plt.title(f"Packet {packet_idx} arrival times vs array position after first cleaning")
-    # plt.show()
-
-    # axis_2 = positions_inlier2[-1]-positions_inlier2[0]
-    # axis_2 /= np.linalg.norm(axis_2)
-
-    # proj_inlier2 = positions_inlier2 @ axis_final
-    # plt.figure()
-    # plt.plot(proj_inlier2, times_inlier2, 'o-')
-    # plt.xlabel("Along-array coordinate (m)")
-    # plt.ylabel("Arrival time (s)")
-    # plt.title(f"Packet {packet_idx} arrival times vs array position after second cleaning")
-    # plt.show()
 
 
-    
-    # visualize_doa_fit(
-    #     channel_positions_enu,
-    #     times_corr_sec,
-    #     residuals,
-    #     direction_,
-    #     left_right_ambiguity(direction, channel_positions_enu),
-    #     channels,
-    #     model,
-    #     title=f"Packet {packet_idx} first pass"
-    # )
-
-    # visualize_doa_fit(
-    #     positions_inlier,
-    #     times_inlier,
-    #     residuals_refit,
-    #     direction_refit,
-    #     left_right_ambiguity(direction_refit, positions_inlier),
-    #     channels_inlier,
-    #     model_refit,
-    #     title=f"Packet {packet_idx} second pass"
-    # )
-
-#     direction_source_A = [0,0,1]
-#     direction_source_B = [0,0,-1]
-
-#     visualize_doa_fit(
-#         positions_inlier2,
-#         times_inlier2,
-#         residuals_refit2,
-#         direction_source_A,
-#         direction_source_B,
-#         channels_inlier2,
-#         model_final,
-#         title=f"Packet {packet_idx} final fit"
-# )
 
 
 

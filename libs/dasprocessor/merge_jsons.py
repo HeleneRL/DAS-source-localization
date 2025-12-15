@@ -66,6 +66,10 @@ def main():
         root / "peaks-244-256-run2-HeleneTweaks.json",
         root / "peaks-256-268-run2-HeleneTweaks.json",
         root / "peaks-268-280-run2-HeleneTweaks.json",
+        root / "peaks-280-292-run2-HeleneTweaks.json",
+        root / "peaks-292-304-run2-HeleneTweaks.json",
+        root / "peaks-304-316-run2-HeleneTweaks.json",
+        root / "peaks-316-328-run2-HeleneTweaks.json",
         root / "peaks-328-340-run2-HeleneTweaks.json",
         root / "peaks-340-352-run2-HeleneTweaks.json",
 
