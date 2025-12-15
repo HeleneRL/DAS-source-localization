@@ -10,5 +10,7 @@ __pycache__/
 
 libs/resources/Maps/
 
+libs/resources/Alternative_cable_layouts
+
 # editor settings
 .vscode/
