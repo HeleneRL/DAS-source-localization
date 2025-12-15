@@ -8,11 +8,7 @@
 __pycache__/
 *.pyc
 
-# data or large binaries
-data/
-*.csv
-*.bin
-*.zip
+libs/resources/Maps/
 
 # editor settings
 .vscode/
