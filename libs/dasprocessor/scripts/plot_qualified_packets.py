@@ -1,9 +1,12 @@
 from __future__ import annotations
 import subprocess
-import sys  # <-- add this
+import sys  
+
+#  List of packets to plot maps for
+# run find_qualified_packets.py and make sure you only include actually qualified packets in this list, or you will get errors
 
 QUALIFIED_PACKETS = [
-    39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49,
+    46, 48, 49,
     50, 51, 52, 53, 54, 55, 56, 57, 58, 60,
 ]
 
@@ -45,7 +48,7 @@ QUALIFIED_PACKETS_test_gr = [
 
 
 def main():
-    for p in QUALIFIED_PACKETS_test_gr:
+    for p in QUALIFIED_PACKETS:
         print(f"=== Building map for packet {p} ===")
         subprocess.run(
             [

@@ -4,6 +4,42 @@ import numpy as np
 from scipy.optimize import least_squares
 from pymap3d import geodetic2enu
 
+''' 
+
+OBS! This script is currently not in use, it is not needed for the main processing.
+It was used to calibrate array orientation segments based on known speaker positions and recorded arrival times, but the results were not great and 
+the method was abandoned. The likely reason is the whole multipath issue that was not handled here.
+
+
+No other scripts depend on this one.
+
+
+'''
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # ----------------------------------------------------------------------
 # USER INPUT: FILES
 # ----------------------------------------------------------------------

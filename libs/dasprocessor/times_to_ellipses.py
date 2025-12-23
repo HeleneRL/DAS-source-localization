@@ -16,7 +16,7 @@ from dasprocessor.doa_v2 import fit_doa, cone_radian_from_slope, cone_plane_inte
 
 FS = 25_000.0           # Hz
 C_SOUND = 1475.0        # m/s
-SOURCE_DEPTH = -30.0    # ENU z of source plane
+SOURCE_DEPTH = 30.0    # ENU z of source plane
 ANGLE_UNCERTAINTY_DEG = 5.0
 
 MAX_EXTRA_DIST_1 = 10.0  # m (first residual threshold)
@@ -341,7 +341,7 @@ def process_packet(
         angle_off_axis = cone_angle_deg
         side = "+axis (first to last)"
     else:
-        angle_off_axis = 180.0 - cone_angle_deg
+        angle_off_axis = (180.0 - cone_angle_deg)
         side = "-axis (last to first)"
 
     residual_rms = float(np.sqrt(np.mean(residuals_final**2)))

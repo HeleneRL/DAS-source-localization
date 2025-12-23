@@ -19,7 +19,7 @@ for feature in data["features"]:
             if len(point) == 3 and point[2] != 0:
                 point[2] = point[2] + DEPTH_OFFSET
             else:
-                # If no depth is present, optionally skip or insert one
+                # If no depth is present,  skip or insert one
                 # point.append(DEPTH_OFFSET)
                 pass
 

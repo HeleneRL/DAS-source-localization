@@ -2,7 +2,36 @@ import json
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Path to your JSON file
+
+'''
+
+This script loads a JSON file containing time-of-arrival (ToA) data for various packets across multiple channels.
+It then generates two plots:
+1) A heatmap showing which channels detected ToAs for each packet.
+2) A bar chart showing the percentage of channels that detected each packet.
+
+This analysis helps visualize the coverage and reliability of packet detection across the channel array.
+
+It is used for debugging and creating plots for the report, not directly in processing or any pipeline.
+
+
+
+
+
+
+
+no other scripts depend on this one.
+
+'''
+
+
+
+
+
+
+
+
+# Path to JSON file
 json_path = r"C:\Users\helen\Documents\PythonProjects\my-project\libs\resources\B_4\peaks-merged-all_hilbert_channels.json"
 
 # Parameters
@@ -88,7 +117,7 @@ ax2.set_title("Channel coverage per packet (channels 16–351)")
 # Add grid for readability
 ax2.grid(True, linestyle="--", alpha=0.6)
 
-# Optional nicer x ticks
+#  nicer x ticks
 ax2.set_xticks(np.arange(0, n_packets, 8))
 
 ax2.hlines(
@@ -99,7 +128,7 @@ ax2.hlines(
     linewidth=2
 )
 
-# 2) Slanted line packet 48 -> 127 going from 70 -> 15
+# 2) Slanted line packet 48 -> 127 going from 70 -> 15 -> HIGHLY specific to this dataset
 ax2.plot(
     [48, 127],
     [70, 15],

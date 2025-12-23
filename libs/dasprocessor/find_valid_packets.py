@@ -5,6 +5,24 @@ from pathlib import Path
 from typing import Set, Dict, Any, List
 
 
+
+'''
+
+this script finds packet indices that are marked as valid and have ellipse points in all subarray info/ellipse JSON files. 
+
+mostly useful for filtering packets for further processing or analysis.
+
+should be combined with the plotting scripts to visualize only the qualified packets... 
+
+
+
+no other scripts depend on this one directly, but you need to make sure to only plot packets that are actually qualified. if else you will get errors.
+
+
+
+'''
+
+
 def load_packet_set_for_subarray(info_path: Path, ellipse_path: Path) -> Set[int]:
     """
     For one subarray:

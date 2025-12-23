@@ -7,7 +7,7 @@ import argparse
 from typing import List
 
 import folium
-import numpy as np  # needed by center_for_gps_or_run
+import numpy as np  
 
 from dasprocessor.plot.map_layers_v2 import (
     add_cable_layout_layer,
@@ -178,15 +178,7 @@ def main() -> None:
 
 
     
-    # channel_position_path = r"C:\Users\helen\Documents\PythonProjects\my-project\libs\resources\B_4\channel_pos_geo_adjusted.json"
-
-    # with open(channel_position_path, "r", encoding="utf-8") as f:
-    #     channel_pos_geo_raw = json.load(f)
-
-    # # Convert keys to integers
-    # channel_pos_geo = {int(ch): pos for ch, pos in channel_pos_geo_raw.items()}
-
-    # Now valid:
+    
     enu_ref = enu_reference_from_channels(channel_pos_geo, channel_idx=0)
 
 
@@ -270,7 +262,7 @@ def main() -> None:
         name="TX positions",
     ).add_to(m)
 
-    # 6) Ellipse uncertainty bands for a single packet (optional)
+    # 6) Ellipse uncertainty bands for a single packet 
     if pkt_ellipses is not None:
         pkt_key = str(pkt_ellipses)
         for start_ch in SUBARRAY_START_CHANNELS:
@@ -319,29 +311,6 @@ def main() -> None:
     )
 
 
-
-
-    # # 9) DOA results layer(s)
-    # doa_results_paths = [
-    #     b4_dir / "DOA_results-100-131.json",
-    #     # add more here if you want
-    # ]
-
-    # for doa_path in doa_results_paths:
-    #     print(f"Processing array DOA results from {doa_path}")
-    #     if doa_path.exists():
-    #         with doa_path.open("r", encoding="utf-8") as f:
-    #             doa_results_small = json.load(f)
-
-    #         # Example: packet_filter takes an int or None
-    #         build_doa_layer_from_results(
-    #             m,
-    #             doa_results_small,
-    #             name=f"DOA {doa_path.stem}",   # e.g. "DOA DOA_results-100-131"
-    #             packet_filter=PACKET_FILTER_FOR_DOA,
-    #         ).add_to(m)
-    #     else:
-    #         print(f"[WARN] No DOA results file found at {doa_path}")
 
     # 10) Finalize
     folium.LayerControl().add_to(m)

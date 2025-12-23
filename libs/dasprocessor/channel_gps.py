@@ -4,8 +4,8 @@ from pathlib import Path
 from typing import Dict, List, Tuple, Optional
 
 '''
-this module provides functions to compute GPS positions for channels along a cable layout defined in a GeoJSON file.
-it accounts for missing altitude data by interpolating values, and allows for flexible origin placement for channel 0.
+this script provides functions to compute GPS positions for channels along a cable layout defined in a GeoJSON file.
+The main function is compute_channel_positions(...) which returns a dictionary mapping channel numbers to their GPS coordinates (latitude, longitude, altitude).
 
 
 '''

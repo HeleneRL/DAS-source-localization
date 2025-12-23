@@ -1,4 +1,20 @@
-"""Module for detecting received packets and pinpointing their timing."""
+"""Module for detecting received packets and pinpointing their timing.
+
+
+This script builds on a implementation made by Emil Wengle. 
+
+There is several things that should be imporoved, but to run it now, just call the main() function at the bottom.
+
+BUT! make sure to update the channels you want to load, the run number and frequeny band. It defaults to run 2, B_4.
+
+Update the path to your data folder as well inside the main() function. and the cache path. and where to save the peaks. and you are good to go.... i hope :)
+
+I will fix this properly later, but for now, this works for me.
+
+
+
+
+"""
 
 import numpy as np
 from scipy.signal import correlate, find_peaks, hilbert

@@ -6,10 +6,45 @@ from pathlib import Path
 from datetime import datetime
 from typing import Dict, Tuple, List, Optional
 
-from dasprocessor.constants import get_run  # your existing helper
+from dasprocessor.constants import get_run  
 
 
-DATE_STR = "2024-05-03"  # the experiment date for these runs
+'''
+
+NOT CURRENTLY IN USE!
+
+This script computes travel times for DAS data based on arrival times stored in a JSON file.
+
+used for debugging, at an early stage, not part of any pipeline.
+
+
+
+
+
+
+
+
+
+no other scripts depend on this one.
+
+'''
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+DATE_STR = "2024-05-03"  
 
 
 def _parse_iso_dt(s: str) -> datetime:

@@ -11,6 +11,27 @@ import os
 
 
 
+'''
+
+This is called by times_to_ellipses.py to fit DOA from arrival times and channel positions and make the DOA cone-plane intersections.
+
+
+This script is not ran directly.
+
+another script is dependent on it: times_to_ellipses.py
+
+
+'''
+
+
+
+
+
+
+
+
+
+
 def fit_doa(times, channel_positions_enu):
     """
     Fit DOA from arrival times and channel positions (ENU).
@@ -751,7 +772,7 @@ def main() -> None:
 
 
     # --- Compute ellipse at source depth ---
-    source_depth = -30.0  # for example, ENU z = -50 m
+    source_depth = 30.0  # for example, ENU z = -50 m
 
     uncertainty_deg = 5.0  # e.g., 5 degrees uncertainty
 

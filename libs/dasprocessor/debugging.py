@@ -6,6 +6,29 @@ import math
 from mpl_toolkits.mplot3d import Axes3D
 
 
+
+'''
+
+Altough this is called debugging.py, it contains functions that are actually used in processing, mostly for debugging and visulization, but deleting this 
+script would create issues, so dont delete it.
+
+
+several other scripts depend on this one at this stage.
+
+
+'''
+
+
+
+
+
+
+
+
+
+
+
+
 def cone_plane_intersection_enu(center_enu, axis_enu, psi_rad, z_source, n_points=360):
     """
     Compute approximate ENU points on the intersection of:

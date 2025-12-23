@@ -7,7 +7,33 @@ import numpy as np
 from shapely.geometry import Polygon, MultiPolygon, Point
 from shapely.ops import unary_union
 
-SOURCE_DEPTH = -30.0   # same as in your DOA script
+
+'''
+right now this script is a stand alone script to find centroids of intersection regions from ellipse bands for multiple subarrays.
+It reads in ellipse band data from multiple subarrays (JSON files), computes the intersection of the bands for each packet, and extracts the centroids of the intersection regions.
+The resulting centroids are saved to a JSON file.
+
+this functuonality should eventually be integrated into a larger processing pipeline for DAS data analysis.
+
+running this script requires having precomputed ellipse band data for multiple subarrays, stored in JSON files in a specified directory.
+
+several paths are hardcoded and may need to be adjusted.
+
+
+
+'''
+
+
+
+
+
+
+
+
+
+
+
+SOURCE_DEPTH = -30.0   # obs obs
 
 
 
