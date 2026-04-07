@@ -1,0 +1,70 @@
+# Singapore DAS bulk matched-filter configuration
+# Edit only the paths / anchors / channels if needed.
+
+[general]
+data_root = 'D:\\Singapore Data'
+output_root = 'D:\\Singapore Data\\processed_outputs\\lfm_35_45_bulk'
+locations_to_process = ['loc2_tx3', 'loc3_tx1', 'loc4_tx1', 'loc5_tx1', 'loc6_tx1', 'loc7_tx1']
+
+[acquisition]
+max_channel_exclusive = 3000
+channel_start = 0
+channel_block_size = 32
+
+[signal]
+fs_nominal_hz = 25000.0
+lfm_f0_hz = 3500.0
+lfm_f1_hz = 4500.0
+lfm_duration_s = 5.0
+reference_window = 'hann'
+
+[search]
+search_before_s = 2.0
+search_after_s = 2.0
+# The raw data window must be longer than the search span because the matched filter
+# needs the full 5 s chirp available for every candidate start time.
+# Raw window length = search_before + search_after + lfm_duration.
+peak_threshold_snr = 4.0
+warn_if_peak_within_s = 0.05
+correlation_method = 'fft'
+
+[outputs]
+save_per_location_csv = true
+save_combined_csv = true
+save_run_metadata_json = true
+
+[locations.loc2_tx3]
+folder = 'loc2_tx3'
+reference_channel = 1960
+anchor_times_s = [20.220960, 26.893240]
+anchor_labels = ['lfm35_45_rep1', 'lfm35_45_rep2']
+
+[locations.loc3_tx1]
+folder = 'loc3_tx1'
+reference_channel = 2100
+anchor_times_s = [20.410800, 27.478880]
+anchor_labels = ['lfm35_45_rep1', 'lfm35_45_rep2']
+
+[locations.loc4_tx1]
+folder = 'loc4_tx1'
+reference_channel = 530
+anchor_times_s = [20.954400, 27.961320]
+anchor_labels = ['lfm35_45_rep1', 'lfm35_45_rep2']
+
+[locations.loc5_tx1]
+folder = 'loc5_tx1'
+reference_channel = 750
+anchor_times_s = [14.229760, 21.142240]
+anchor_labels = ['lfm35_45_rep1', 'lfm35_45_rep2']
+
+[locations.loc6_tx1]
+folder = 'loc6_tx1'
+reference_channel = 1150
+anchor_times_s = [18.868360, 25.797560]
+anchor_labels = ['lfm35_45_rep1', 'lfm35_45_rep2']
+
+[locations.loc7_tx1]
+folder = 'loc7_tx1'
+reference_channel = 1650
+anchor_times_s = [17.548720, 24.570200]
+anchor_labels = ['lfm35_45_rep1', 'lfm35_45_rep2']

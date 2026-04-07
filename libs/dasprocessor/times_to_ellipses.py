@@ -16,7 +16,7 @@ from dasprocessor.doa_v2 import fit_doa, cone_radian_from_slope, cone_plane_inte
 
 FS = 25_000.0           # Hz
 C_SOUND = 1475.0        # m/s
-SOURCE_DEPTH = 30.0    # ENU z of source plane
+SOURCE_DEPTH = -30.0    # ENU z of source plane
 ANGLE_UNCERTAINTY_DEG = 5.0
 
 MAX_EXTRA_DIST_1 = 10.0  # m (first residual threshold)
@@ -40,10 +40,13 @@ channel_distance = 1.02
 CHANNEL_OFFSET = N_SKIP * channel_distance  # m
 
 
-DEBUG_PLOTS = False  # choose packet index to visualize, or None to disable
-DEBUG_PACKET_IDX = 0
+DEBUG_PLOTS = True  # choose packet index to visualize, or None to disable
+DEBUG_PACKET_IDX = 34
 
-def debug_plot_doa_stage(
+
+
+
+def debug_plot_doa_stage_1(
     positions_enu: np.ndarray,
     times_sec: np.ndarray,
     residuals: np.ndarray,
@@ -158,6 +161,87 @@ def debug_plot_doa_stage(
     plt.tight_layout()
     plt.show()
 
+def debug_plot_doa_stage(
+    positions_enu: np.ndarray,
+    times_sec: np.ndarray,
+    residuals: np.ndarray,
+    model,
+    axis_vec: np.ndarray,
+    packet_idx: int,
+    start_channel: int,
+    stage_label: str,
+    c_sound: float = C_SOUND,
+) -> None:
+
+    if positions_enu.size == 0:
+        return
+
+    # --- MATCH fit_doa(): use full 3D positions (no z-flattening) ---
+    axis_vec = np.asarray(axis_vec, dtype=float)
+    axis_vec = axis_vec / (np.linalg.norm(axis_vec) + 1e-15)
+
+    # Along-array coordinate exactly like fit_doa()
+    s = positions_enu @ axis_vec
+    s = s - s[0]                 # IMPORTANT: same anchoring as fit_doa()
+    X_feat = s.reshape(-1, 1)
+
+    # Predict times from the regression model
+    t_fit = model.predict(X_feat)
+    t_fit = np.asarray(t_fit).ravel()
+
+    # Extract slope/intercept (for annotation only)
+    if hasattr(model, "estimator_"):  # RANSACRegressor
+        slope = float(model.estimator_.coef_[0])
+        intercept = float(model.estimator_.intercept_)
+        inlier_mask = getattr(model, "inlier_mask_", None)
+    else:
+        slope = float(model.coef_[0])
+        intercept = float(model.intercept_)
+        inlier_mask = None
+
+    # Angle annotation
+    axis_dot_n = float(np.clip(c_sound * slope, -1.0, 1.0))
+    angle_deg = float(np.degrees(np.arccos(axis_dot_n)))
+
+    textstr = f"slope = {slope:.3e} s/m\nangle = ±{angle_deg:.1f}°"
+
+    # Sort for plotting
+    order = np.argsort(s)
+    s_sorted = s[order]
+    t_sorted = times_sec[order]
+    t_fit_sorted = t_fit[order]
+
+    # --- Plot ---
+    fig, ax = plt.subplots(figsize=(6, 4))
+    ax.scatter(s_sorted, t_sorted, s=30, label="RANSAC outliers", color="orange")
+    ax.plot(s_sorted, t_fit_sorted, linewidth=2)
+
+    # Optional: show which points RANSAC considered inliers (super useful!)
+    if inlier_mask is not None and len(inlier_mask) == len(s):
+        ax.scatter(s[inlier_mask], times_sec[inlier_mask], s=40, label="RANSAC inliers")
+
+    ax.set_xlabel(f"Along-array position (m), distance from channel {start_channel}")
+    ax.set_ylabel("Arrival time (s)")
+    ax.set_title(
+        f"Arrival times for packet {packet_idx} for subarray with start channel {start_channel}\n"
+        f"{stage_label} fit"
+    )
+    ax.grid(True, alpha=0.3)
+
+    x = 0.98 if slope >= 0 else 0.02
+    ha = "right" if slope >= 0 else "left"
+    ax.text(
+        x, 0.02, textstr,
+        transform=ax.transAxes,
+        fontsize=9,
+        va="bottom",
+        ha=ha,
+        bbox=dict(facecolor="white", alpha=0.8, edgecolor="gray"),
+    )
+
+    ax.legend()
+    plt.tight_layout()
+    plt.show()
 
 
 # ---------------- CORE PER-PACKET LOGIC ----------------

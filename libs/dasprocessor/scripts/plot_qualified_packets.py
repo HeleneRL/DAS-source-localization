@@ -45,8 +45,6 @@ QUALIFIED_PACKETS_test_gr = [
 
 
 
-
-
 def main():
     for p in QUALIFIED_PACKETS:
         print(f"=== Building map for packet {p} ===")
